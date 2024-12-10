@@ -7,6 +7,7 @@ import Navbar from "./components/layout/Navbar";
 import Index from "./pages/Index";
 import AuthPage from "./pages/Auth";
 import Analytics from "./pages/Analytics";
+import Profile from "./pages/Profile";
 import IncidentReportForm from "./components/IncidentReportForm";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ReportDetail from "./pages/ReportDetail";
@@ -61,6 +62,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <ReportDetail />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
                   </ProtectedRoute>
                 }
               />
