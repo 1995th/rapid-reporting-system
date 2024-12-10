@@ -20,24 +20,20 @@ const ReportStatusMetrics = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('reports')
-        .select('status')
-        .then(({ data, error }) => {
-          if (error) throw error;
-          
-          const counts = data.reduce((acc: { [key: string]: number }, report) => {
-            acc[report.status] = (acc[report.status] || 0) + 1;
-            return acc;
-          }, {});
-          
-          return {
-            approved: counts['approved'] || 0,
-            pending: counts['pending'] || 0,
-            rejected: counts['rejected'] || 0
-          };
-        });
+        .select('status');
 
       if (error) throw error;
-      return data;
+      
+      const counts = data.reduce((acc: { [key: string]: number }, report) => {
+        acc[report.status] = (acc[report.status] || 0) + 1;
+        return acc;
+      }, {});
+      
+      return {
+        approved: counts['approved'] || 0,
+        pending: counts['pending'] || 0,
+        rejected: counts['rejected'] || 0
+      };
     }
   });
 
