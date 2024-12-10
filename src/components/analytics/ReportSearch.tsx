@@ -1,20 +1,13 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import { SearchFilters } from "./types";
 import { SearchFiltersComponent } from "./SearchFilters";
 import { ReportsTable } from "./ReportsTable";
+import { ReportPagination } from "./ReportPagination";
+import { useReportData } from "@/hooks/useReportData";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -38,59 +31,8 @@ const ReportSearch = () => {
     },
   });
 
-  // Fetch filtered reports
-  const { data: reportData, isLoading } = useQuery({
-    queryKey: ["reports", filters, currentPage],
-    queryFn: async () => {
-      let query = supabase
-        .from("reports")
-        .select(
-          `
-          *,
-          case_categories (
-            name
-          ),
-          profiles (
-            first_name,
-            last_name
-          )
-        `
-        )
-        .order("created_at", { ascending: false });
-
-      // Apply filters
-      if (filters.title) {
-        query = query.ilike("title", `%${filters.title}%`);
-      }
-
-      if (filters.categoryId) {
-        query = query.eq("category_id", filters.categoryId);
-      }
-
-      if (filters.dateRange?.from) {
-        query = query.gte(
-          "incident_date",
-          format(filters.dateRange.from, "yyyy-MM-dd")
-        );
-      }
-
-      if (filters.dateRange?.to) {
-        query = query.lte(
-          "incident_date",
-          format(filters.dateRange.to, "yyyy-MM-dd")
-        );
-      }
-
-      // Apply pagination
-      const start = (currentPage - 1) * ITEMS_PER_PAGE;
-      query = query.range(start, start + ITEMS_PER_PAGE - 1);
-
-      const { data, error, count } = await query;
-      if (error) throw error;
-
-      return { data, count };
-    },
-  });
+  // Fetch filtered reports using the custom hook
+  const { data: reportData, isLoading } = useReportData(filters, currentPage);
 
   const totalPages = reportData?.count
     ? Math.ceil(reportData.count / ITEMS_PER_PAGE)
@@ -115,48 +57,11 @@ const ReportSearch = () => {
 
           <ReportsTable reports={reportData?.data || []} />
 
-          {totalPages > 1 && (
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setCurrentPage((p) => Math.max(1, p - 1));
-                    }}
-                    aria-disabled={currentPage === 1}
-                  />
-                </PaginationItem>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                  (page) => (
-                    <PaginationItem key={page}>
-                      <PaginationLink
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setCurrentPage(page);
-                        }}
-                        isActive={currentPage === page}
-                      >
-                        {page}
-                      </PaginationLink>
-                    </PaginationItem>
-                  )
-                )}
-                <PaginationItem>
-                  <PaginationNext
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setCurrentPage((p) => Math.min(totalPages, p + 1));
-                    }}
-                    aria-disabled={currentPage === totalPages}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          )}
+          <ReportPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </CardContent>
     </Card>
