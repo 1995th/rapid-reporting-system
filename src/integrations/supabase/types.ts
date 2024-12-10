@@ -9,7 +9,156 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      case_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      evidence: {
+        Row: {
+          created_at: string
+          description: string | null
+          file_type: string
+          file_url: string
+          id: string
+          report_id: string
+          updated_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          file_type: string
+          file_url: string
+          id?: string
+          report_id: string
+          updated_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          file_type?: string
+          file_url?: string
+          id?: string
+          report_id?: string
+          updated_at?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          phone_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          phone_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          phone_number?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          category_id: string
+          created_at: string
+          description: string
+          id: string
+          location: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          description: string
+          id?: string
+          location?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          location?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "case_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
