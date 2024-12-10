@@ -8,12 +8,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { UseFormReturn } from "react-hook-form";
+import { SpeechInput } from "./SpeechInput";
 
 interface BasicFieldsProps {
   form: UseFormReturn<any>;
 }
 
 export const BasicFields = ({ form }: BasicFieldsProps) => {
+  const handleTranscript = (text: string) => {
+    const currentDescription = form.getValues("description");
+    form.setValue("description", currentDescription ? `${currentDescription}\n${text}` : text);
+  };
+
   return (
     <>
       <FormField
@@ -77,7 +83,10 @@ export const BasicFields = ({ form }: BasicFieldsProps) => {
         name="description"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Description</FormLabel>
+            <FormLabel className="flex items-center justify-between">
+              <span>Description</span>
+              <SpeechInput onTranscript={handleTranscript} />
+            </FormLabel>
             <FormControl>
               <Textarea
                 placeholder="Provide detailed information about the incident"
