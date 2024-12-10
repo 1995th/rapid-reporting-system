@@ -8,8 +8,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
+import Highcharts from 'highcharts';
+import HighchartsReact from 'highcharts-react-official';
 
 const ReportMetrics = () => {
   const { data: reportsByCategory, isLoading: loadingCategories } = useQuery({
@@ -33,13 +33,44 @@ const ReportMetrics = () => {
         return acc;
       }, {});
 
-      // Convert to the format expected by the chart
-      return Object.entries(categoryCounts).map(([category, count]) => ({
-        category,
-        count,
-      }));
+      return categoryCounts;
     }
   });
+
+  const chartOptions: Highcharts.Options = {
+    chart: {
+      type: 'column',
+      style: {
+        fontFamily: 'inherit'
+      }
+    },
+    title: {
+      text: undefined
+    },
+    xAxis: {
+      categories: reportsByCategory ? Object.keys(reportsByCategory) : [],
+      title: {
+        text: 'Categories'
+      }
+    },
+    yAxis: {
+      title: {
+        text: 'Number of Reports'
+      }
+    },
+    series: [{
+      name: 'Reports',
+      type: 'column',
+      data: reportsByCategory ? Object.values(reportsByCategory) : [],
+      color: '#0ea5e9'
+    }],
+    credits: {
+      enabled: false
+    },
+    legend: {
+      enabled: false
+    }
+  };
 
   if (loadingCategories) {
     return <Skeleton className="w-full h-[300px]" />;
@@ -53,33 +84,10 @@ const ReportMetrics = () => {
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">
-          <ChartContainer
-            config={{
-              reports: {
-                theme: {
-                  light: "#0ea5e9",
-                  dark: "#0ea5e9",
-                },
-              },
-            }}
-          >
-            <BarChart data={reportsByCategory}>
-              <XAxis dataKey="category" />
-              <YAxis />
-              <Tooltip content={({ active, payload }) => {
-                if (!active || !payload) return null;
-                return (
-                  <div className="rounded-lg border bg-background p-2 shadow-sm">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="font-medium">{payload[0]?.payload?.category}</div>
-                      <div className="font-medium">{payload[0]?.value} reports</div>
-                    </div>
-                  </div>
-                );
-              }} />
-              <Bar dataKey="count" fill="var(--color-reports)" />
-            </BarChart>
-          </ChartContainer>
+          <HighchartsReact
+            highcharts={Highcharts}
+            options={chartOptions}
+          />
         </div>
       </CardContent>
     </Card>
