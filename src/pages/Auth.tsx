@@ -42,9 +42,7 @@ const AuthPage = () => {
               sign_up: {
                 password_label: "Password",
                 password_input_placeholder: "Password (min 6 characters)",
-                confirm_password: "Confirm Password",
-                confirmation_text: "",
-                password_match_error: "Passwords do not match",
+                confirmation_text: "Please confirm your password",
                 button_label: "Sign Up"
               }
             }
