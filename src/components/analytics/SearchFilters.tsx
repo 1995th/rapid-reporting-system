@@ -7,19 +7,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SearchFilters } from "./types";
+import type { SearchFilters as SearchFiltersType } from "./types";
 
 interface SearchFiltersProps {
-  filters: SearchFilters;
+  filters: SearchFiltersType;
   categories: Array<{ id: string; name: string }>;
-  onFiltersChange: (filters: SearchFilters) => void;
+  onFiltersChange: (filters: SearchFiltersType) => void;
 }
 
-export const SearchFilters = ({
+export function SearchFiltersComponent({
   filters,
   categories,
   onFiltersChange,
-}: SearchFiltersProps) => {
+}: SearchFiltersProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <Input
@@ -58,4 +58,4 @@ export const SearchFilters = ({
       />
     </div>
   );
-};
+}
