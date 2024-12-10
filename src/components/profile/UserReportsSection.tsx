@@ -15,13 +15,14 @@ import { format } from "date-fns";
 import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
+import { DateRange } from "react-day-picker";
 
 export const UserReportsSection = ({ userId }: { userId: string }) => {
   const navigate = useNavigate();
   const [filters, setFilters] = useState({
     title: "",
     status: "all",
-    dateRange: undefined as { from: Date; to: Date } | undefined,
+    dateRange: undefined as DateRange | undefined,
   });
 
   const { data: reports, isLoading } = useQuery({
