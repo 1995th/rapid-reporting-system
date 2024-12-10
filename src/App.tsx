@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import AuthPage from "./pages/Auth";
+import Analytics from "./pages/Analytics";
 import IncidentReportForm from "./components/IncidentReportForm";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -31,6 +32,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <IncidentReportForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute>
+                <Analytics />
               </ProtectedRoute>
             }
           />
