@@ -41,6 +41,14 @@ const App = () => (
                 }
               />
               <Route
+                path="/edit-report/:id"
+                element={
+                  <ProtectedRoute>
+                    <IncidentReportForm />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/analytics"
                 element={
                   <ProtectedRoute>
