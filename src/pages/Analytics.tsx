@@ -4,6 +4,7 @@ import { useRoleAuthorization } from "@/hooks/useRoleAuthorization";
 import ReportMetrics from "@/components/analytics/ReportMetrics";
 import TotalReports from "@/components/analytics/TotalReports";
 import ReportSearch from "@/components/analytics/ReportSearch";
+import ReportStatusMetrics from "@/components/analytics/ReportStatusMetrics";
 
 const Analytics = () => {
   const navigate = useNavigate();
@@ -32,6 +33,8 @@ const Analytics = () => {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <TotalReports />
       </div>
+
+      <ReportStatusMetrics />
 
       <div className="grid gap-6">
         <ReportMetrics />
