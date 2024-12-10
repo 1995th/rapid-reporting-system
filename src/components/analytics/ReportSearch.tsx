@@ -13,7 +13,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { SearchFilters } from "./types";
-import { SearchFilters as SearchFiltersComponent } from "./SearchFilters";
+import { SearchFiltersComponent } from "./SearchFilters";
 import { ReportsTable } from "./ReportsTable";
 
 const ITEMS_PER_PAGE = 10;
