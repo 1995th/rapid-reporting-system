@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useRoleAuthorization } from "@/hooks/useRoleAuthorization";
 import ReportMetrics from "@/components/analytics/ReportMetrics";
 import TotalReports from "@/components/analytics/TotalReports";
+import ReportSearch from "@/components/analytics/ReportSearch";
 
 const Analytics = () => {
   const navigate = useNavigate();
@@ -34,6 +35,7 @@ const Analytics = () => {
 
       <div className="grid gap-6">
         <ReportMetrics />
+        <ReportSearch />
       </div>
     </div>
   );
