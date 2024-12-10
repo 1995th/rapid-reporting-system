@@ -42,7 +42,12 @@ const ReportMetrics = () => {
       type: 'column',
       style: {
         fontFamily: 'inherit'
-      }
+      },
+      height: 250,
+      spacingTop: 10,
+      spacingBottom: 10,
+      spacingLeft: 10,
+      spacingRight: 10,
     },
     title: {
       text: undefined
@@ -51,11 +56,21 @@ const ReportMetrics = () => {
       categories: reportsByCategory ? Object.keys(reportsByCategory) : [],
       title: {
         text: 'Categories'
+      },
+      labels: {
+        style: {
+          fontSize: '12px'
+        }
       }
     },
     yAxis: {
       title: {
         text: 'Number of Reports'
+      },
+      labels: {
+        style: {
+          fontSize: '12px'
+        }
       }
     },
     series: [{
@@ -69,6 +84,15 @@ const ReportMetrics = () => {
     },
     legend: {
       enabled: false
+    },
+    plotOptions: {
+      column: {
+        borderRadius: 4
+      }
+    },
+    tooltip: {
+      headerFormat: '<b>{point.x}</b><br/>',
+      pointFormat: '{point.y} reports'
     }
   };
 
@@ -78,12 +102,12 @@ const ReportMetrics = () => {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="pb-4">
         <CardTitle>Reports by Category</CardTitle>
         <CardDescription>Distribution of reports across different categories</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="h-[300px]">
+      <CardContent className="pt-0">
+        <div className="w-full">
           <HighchartsReact
             highcharts={Highcharts}
             options={chartOptions}
