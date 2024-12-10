@@ -16,6 +16,8 @@ const formSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title is too long"),
   description: z.string().min(1, "Description is required"),
   category_id: z.string().uuid("Please select a category"),
+  incident_date: z.string().optional(),
+  incident_time: z.string().optional(),
   location: z.string().optional(),
   files: fileSchema,
 });
@@ -41,6 +43,8 @@ const IncidentReportForm = () => {
     defaultValues: {
       title: "",
       description: "",
+      incident_date: "",
+      incident_time: "",
       location: "",
     },
   });
@@ -63,6 +67,8 @@ const IncidentReportForm = () => {
           title: values.title,
           description: values.description,
           category_id: values.category_id,
+          incident_date: values.incident_date || null,
+          incident_time: values.incident_time || null,
           location: values.location || null,
           user_id: user.id,
         })
