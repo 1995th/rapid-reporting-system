@@ -40,7 +40,7 @@ const AuthPage = () => {
           localization={{
             variables: {
               sign_up: {
-                password_input_label: "Password",
+                password_label: "Password",
                 password_input_placeholder: "Password (min 6 characters)",
                 confirm_password: "Confirm Password",
                 confirmation_text: "",
