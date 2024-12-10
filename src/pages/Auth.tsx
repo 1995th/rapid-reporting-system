@@ -42,11 +42,15 @@ const AuthPage = () => {
               sign_up: {
                 password_label: "Password",
                 password_input_placeholder: "Password (min 6 characters)",
+                email_label: "Email",
+                email_input_placeholder: "Your email address",
                 confirmation_text: "Please confirm your password",
                 button_label: "Sign Up"
               }
             }
           }}
+          view="sign_up"
+          showLinks={true}
         />
       </div>
     </div>
