@@ -4,12 +4,22 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 
+interface FormValues {
+  title: string;
+  description: string;
+  category_id: string;
+  incident_date?: string;
+  incident_time?: string;
+  location?: string;
+  files?: FileList;
+}
+
 export const useIncidentReportSubmission = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
     try {
       const {
@@ -40,7 +50,7 @@ export const useIncidentReportSubmission = () => {
       // Then, upload files if any
       if (values.files && values.files.length > 0) {
         const files = Array.from(values.files);
-        const uploadPromises = files.map(async (file) => {
+        const uploadPromises = files.map(async (file: File) => {
           const fileExt = file.name.split(".").pop();
           const filePath = `${crypto.randomUUID()}.${fileExt}`;
 
