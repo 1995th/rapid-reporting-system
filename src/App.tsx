@@ -9,6 +9,7 @@ import AuthPage from "./pages/Auth";
 import Analytics from "./pages/Analytics";
 import IncidentReportForm from "./components/IncidentReportForm";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ReportDetail from "./pages/ReportDetail";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Analytics />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/reports/:id"
+                element={
+                  <ProtectedRoute>
+                    <ReportDetail />
                   </ProtectedRoute>
                 }
               />

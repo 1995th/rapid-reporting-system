@@ -9,12 +9,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Report } from "./types";
+import { useNavigate } from "react-router-dom";
 
 interface ReportsTableProps {
   reports: Report[];
 }
 
 export const ReportsTable = ({ reports }: ReportsTableProps) => {
+  const navigate = useNavigate();
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -29,7 +32,11 @@ export const ReportsTable = ({ reports }: ReportsTableProps) => {
         </TableHeader>
         <TableBody>
           {reports?.map((report) => (
-            <TableRow key={report.id}>
+            <TableRow 
+              key={report.id}
+              className="cursor-pointer hover:bg-muted/50"
+              onClick={() => navigate(`/reports/${report.id}`)}
+            >
               <TableCell className="font-medium">{report.title}</TableCell>
               <TableCell>{report.case_categories?.name}</TableCell>
               <TableCell>
