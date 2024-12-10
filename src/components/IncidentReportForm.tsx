@@ -24,12 +24,38 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
+import { Upload } from "lucide-react";
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ACCEPTED_FILE_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/gif",
+  "video/mp4",
+  "application/pdf",
+];
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title is too long"),
   description: z.string().min(1, "Description is required"),
   category_id: z.string().uuid("Please select a category"),
   location: z.string().optional(),
+  files: z
+    .custom<FileList>()
+    .optional()
+    .refine((files) => {
+      if (!files) return true;
+      return Array.from(files).every(
+        (file) => file.size <= MAX_FILE_SIZE
+      );
+    }, "Each file must be less than 10MB")
+    .refine((files) => {
+      if (!files) return true;
+      return Array.from(files).every((file) =>
+        ACCEPTED_FILE_TYPES.includes(file.type)
+      );
+    }, "Only .jpg, .jpeg, .png, .gif, .mp4 and .pdf files are accepted"),
 });
 
 const IncidentReportForm = () => {
@@ -68,22 +94,60 @@ const IncidentReportForm = () => {
         throw new Error("User not authenticated");
       }
 
-      const { error } = await supabase.from("reports").insert({
-        title: values.title,
-        description: values.description,
-        category_id: values.category_id,
-        location: values.location || null,
-        user_id: user.id,
-      });
+      // First, create the report
+      const { data: report, error: reportError } = await supabase
+        .from("reports")
+        .insert({
+          title: values.title,
+          description: values.description,
+          category_id: values.category_id,
+          location: values.location || null,
+          user_id: user.id,
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (reportError) throw reportError;
+
+      // Then, upload files if any
+      if (values.files && values.files.length > 0) {
+        const files = Array.from(values.files);
+        const uploadPromises = files.map(async (file) => {
+          const fileExt = file.name.split(".").pop();
+          const filePath = `${crypto.randomUUID()}.${fileExt}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from("evidence")
+            .upload(filePath, file);
+
+          if (uploadError) throw uploadError;
+
+          const { data: publicUrl } = supabase.storage
+            .from("evidence")
+            .getPublicUrl(filePath);
+
+          // Create evidence record
+          const { error: evidenceError } = await supabase
+            .from("evidence")
+            .insert({
+              report_id: report.id,
+              file_url: publicUrl.publicUrl,
+              file_type: file.type,
+              uploaded_by: user.id,
+            });
+
+          if (evidenceError) throw evidenceError;
+        });
+
+        await Promise.all(uploadPromises);
+      }
 
       toast({
         title: "Success",
         description: "Your report has been submitted successfully.",
       });
 
-      navigate("/"); // Redirect to home page or reports list
+      navigate("/");
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -171,6 +235,47 @@ const IncidentReportForm = () => {
                     className="min-h-[150px]"
                     {...field}
                   />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="files"
+            render={({ field: { onChange, ...field } }) => (
+              <FormItem>
+                <FormLabel>Attachments (Optional)</FormLabel>
+                <FormControl>
+                  <div className="flex items-center justify-center w-full">
+                    <label
+                      htmlFor="file-upload"
+                      className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
+                    >
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <Upload className="w-8 h-8 mb-2 text-gray-500" />
+                        <p className="mb-2 text-sm text-gray-500">
+                          <span className="font-semibold">Click to upload</span> or
+                          drag and drop
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Images, videos, or PDFs (max 10MB each)
+                        </p>
+                      </div>
+                      <input
+                        id="file-upload"
+                        type="file"
+                        className="hidden"
+                        multiple
+                        accept={ACCEPTED_FILE_TYPES.join(",")}
+                        onChange={(e) => {
+                          onChange(e.target.files);
+                        }}
+                        {...field}
+                      />
+                    </label>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
