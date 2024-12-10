@@ -27,6 +27,24 @@ const IncidentReportForm = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Fetch user profile to check role
+  const { data: userProfile } = useQuery({
+    queryKey: ["userProfile"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+      
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+        
+      if (error) throw error;
+      return profile;
+    },
+  });
+
   const { data: categories, isLoading: categoriesLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
@@ -126,6 +144,12 @@ const IncidentReportForm = () => {
       setIsSubmitting(false);
     }
   };
+
+  // If user is not an officer or admin, redirect them
+  if (userProfile && userProfile.role !== 'officer' && userProfile.role !== 'admin') {
+    navigate('/');
+    return null;
+  }
 
   return (
     <div className="max-w-2xl mx-auto p-6">
