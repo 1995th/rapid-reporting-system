@@ -18,6 +18,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Loader2, KeyRound } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { UserReportsSection } from "@/components/profile/UserReportsSection";
 
 // Schema for password update form
 const passwordSchema = z.object({
@@ -46,17 +47,9 @@ const Profile = () => {
         .eq("id", user.id)
         .single();
 
-      const { data: activities } = await supabase
-        .from("user_activities")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(5);
-
       return {
         email: user.email,
         ...profile,
-        activities,
       };
     },
   });
@@ -184,33 +177,8 @@ const Profile = () => {
         </CardContent>
       </Card>
 
-      {/* Recent Activities */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Activities</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {profile?.activities && profile.activities.length > 0 ? (
-              profile.activities.map((activity: any) => (
-                <div
-                  key={activity.id}
-                  className="flex items-start space-x-4 p-4 rounded-lg bg-muted/50"
-                >
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{activity.description}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(activity.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-muted-foreground">No recent activities</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      {/* User Reports Section */}
+      {profile && <UserReportsSection userId={profile.id} />}
     </div>
   );
 };
