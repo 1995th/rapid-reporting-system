@@ -21,16 +21,22 @@ const ReportMetrics = () => {
           category_id,
           case_categories (
             name
-          ),
-          count
-        `)
-        .select('*', { count: 'exact' })
-        .groupBy('category_id, case_categories.name');
+          )
+        `);
 
       if (error) throw error;
-      return data.map(item => ({
-        category: item.case_categories?.name || 'Uncategorized',
-        count: parseInt(item.count)
+
+      // Process the data to count reports per category
+      const categoryCounts = data.reduce((acc: { [key: string]: number }, report) => {
+        const categoryName = report.case_categories?.name || 'Uncategorized';
+        acc[categoryName] = (acc[categoryName] || 0) + 1;
+        return acc;
+      }, {});
+
+      // Convert to the format expected by the chart
+      return Object.entries(categoryCounts).map(([category, count]) => ({
+        category,
+        count,
       }));
     }
   });
