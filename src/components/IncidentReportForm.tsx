@@ -61,6 +61,9 @@ const IncidentReportForm = () => {
     try {
       setIsSubmitting(true);
 
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) throw new Error("No user found");
+
       if (id) {
         const { error } = await supabase
           .from("reports")
@@ -79,14 +82,13 @@ const IncidentReportForm = () => {
           description: "Your report has been updated successfully.",
         });
       } else {
-        const { error } = await supabase.from("reports").insert([
-          {
-            title: data.title,
-            description: data.description,
-            incident_date: data.incident_date.toISOString(),
-            main_category_id: data.main_category_id,
-          },
-        ]);
+        const { error } = await supabase.from("reports").insert({
+          title: data.title,
+          description: data.description,
+          incident_date: data.incident_date.toISOString(),
+          main_category_id: data.main_category_id,
+          user_id: user.id,
+        });
 
         if (error) throw error;
 
