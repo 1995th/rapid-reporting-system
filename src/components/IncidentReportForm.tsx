@@ -92,15 +92,7 @@ const IncidentReportForm = () => {
       };
 
       if (id) {
-        // Update existing report
-        const { error: updateError } = await supabase
-          .from("reports")
-          .update(reportData)
-          .eq("id", id);
-
-        if (updateError) throw updateError;
-
-        // Delete existing category assignments
+        // First, delete existing category assignments
         const { error: deleteError } = await supabase
           .from("report_category_assignments")
           .delete()
@@ -108,7 +100,15 @@ const IncidentReportForm = () => {
 
         if (deleteError) throw deleteError;
 
-        // Insert new category assignments
+        // Then update the report
+        const { error: updateError } = await supabase
+          .from("reports")
+          .update(reportData)
+          .eq("id", id);
+
+        if (updateError) throw updateError;
+
+        // Finally, insert new category assignments
         if (data.categories?.length) {
           const { error: categoryError } = await supabase
             .from("report_category_assignments")
