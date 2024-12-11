@@ -21,11 +21,16 @@ export const UserReportsSection = ({ userId }: { userId: string }) => {
       let query = supabase
         .from("reports")
         .select(`
-          *,
+          id,
+          title,
+          status,
+          incident_date,
           report_category_assignments!report_category_assignments_report_id_fkey (
             main_categories (
+              id,
               name
             ),
+            main_category_id,
             is_primary
           ),
           profiles (
