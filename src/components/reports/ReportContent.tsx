@@ -20,7 +20,7 @@ interface ReportContentProps {
 }
 
 export const ReportContent = ({ report }: ReportContentProps) => {
-  const { data: categoryData, isLoading: isCategoryLoading } = useQuery({
+  const { data: categoryAssignments, isLoading: isCategoryLoading } = useQuery({
     queryKey: ["report-categories", report.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -36,13 +36,15 @@ export const ReportContent = ({ report }: ReportContentProps) => {
           ),
           is_primary
         `)
-        .eq("report_id", report.id)
-        .single();
+        .eq("report_id", report.id);
 
       if (error) throw error;
       return data;
     },
   });
+
+  const primaryCategory = categoryAssignments?.find(cat => cat.is_primary);
+  const secondaryCategories = categoryAssignments?.filter(cat => !cat.is_primary);
 
   return (
     <Card>
@@ -52,18 +54,39 @@ export const ReportContent = ({ report }: ReportContentProps) => {
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <h3 className="font-semibold text-sm text-muted-foreground">Category</h3>
+            <h3 className="font-semibold text-sm text-muted-foreground">Categories</h3>
             {isCategoryLoading ? (
               <Skeleton className="h-8 w-32" />
-            ) : categoryData ? (
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Main Category:</p>
-                <p>{categoryData.main_categories?.name || "Uncategorized"}</p>
-                <p className="text-sm text-muted-foreground mt-2">Subcategory:</p>
-                <p>{categoryData.subcategories?.name || "None"}</p>
+            ) : categoryAssignments?.length ? (
+              <div className="space-y-4">
+                {primaryCategory && (
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Primary Category:</p>
+                    <p className="text-sm">{primaryCategory.main_categories?.name}</p>
+                    {primaryCategory.subcategories && (
+                      <>
+                        <p className="text-sm font-medium text-muted-foreground mt-1">Subcategory:</p>
+                        <p className="text-sm">{primaryCategory.subcategories.name}</p>
+                      </>
+                    )}
+                  </div>
+                )}
+                {secondaryCategories?.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Additional Categories:</p>
+                    <ul className="list-disc list-inside space-y-1">
+                      {secondaryCategories.map((cat, index) => (
+                        <li key={index} className="text-sm">
+                          {cat.main_categories?.name}
+                          {cat.subcategories && ` - ${cat.subcategories.name}`}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             ) : (
-              <p>No category assigned</p>
+              <p className="text-sm text-muted-foreground">No categories assigned</p>
             )}
           </div>
           <div>
