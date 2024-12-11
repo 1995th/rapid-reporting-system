@@ -9,7 +9,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { UseFormReturn } from "react-hook-form";
-import { Check, X } from "lucide-react";
 
 type PasswordFieldsProps = {
   form: UseFormReturn<any>;
@@ -61,25 +60,6 @@ export const PasswordFields = ({ form }: PasswordFieldsProps) => {
               />
             </FormControl>
             <FormMessage />
-            <div className="space-y-2 text-sm mt-2">
-              {passwordRequirements.map((requirement, index) => (
-                <div
-                  key={index}
-                  className={`flex items-center space-x-2 transition-colors duration-200 ${
-                    requirement.regex.test(password)
-                      ? "text-green-500"
-                      : "text-gray-500"
-                  }`}
-                >
-                  {requirement.regex.test(password) ? (
-                    <Check className="h-4 w-4" />
-                  ) : (
-                    <X className="h-4 w-4" />
-                  )}
-                  <span>{requirement.label}</span>
-                </div>
-              ))}
-            </div>
           </FormItem>
         )}
       />
