@@ -31,7 +31,6 @@ export const ReportPagination = ({
               onPageChange(Math.max(1, currentPage - 1));
             }}
             aria-disabled={currentPage === 1}
-            className="hidden sm:flex"
           />
         </PaginationItem>
         {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
@@ -56,12 +55,8 @@ export const ReportPagination = ({
               onPageChange(Math.min(totalPages, currentPage + 1));
             }}
             aria-disabled={currentPage === totalPages}
-            className="hidden sm:flex"
           />
         </PaginationItem>
-        <div className="sm:hidden text-sm text-muted-foreground">
-          Page {currentPage} of {totalPages}
-        </div>
       </PaginationContent>
     </Pagination>
   );

@@ -27,13 +27,13 @@ const TotalReports = () => {
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-lg md:text-xl">Total Reports</CardTitle>
-        <CardDescription className="text-sm md:text-base">Number of reports submitted</CardDescription>
+    <Card>
+      <CardHeader>
+        <CardTitle>Total Reports</CardTitle>
+        <CardDescription>Number of reports submitted</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="text-3xl md:text-4xl font-bold">{totalReports}</div>
+        <div className="text-4xl font-bold">{totalReports}</div>
       </CardContent>
     </Card>
   );
