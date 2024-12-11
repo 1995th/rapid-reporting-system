@@ -1,13 +1,17 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Menu, Home, FilePlus, Search, User } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Menu, Home, FilePlus, Search, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   const navItems = [
     { path: "/", label: "Dashboard", icon: Home },
@@ -15,6 +19,23 @@ const Navbar = () => {
     { path: "/analytics", label: "Search Reports", icon: Search },
     { path: "/profile", label: "Profile", icon: User },
   ];
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Logged out successfully",
+        duration: 2000,
+      });
+      navigate("/auth");
+    } catch (error) {
+      toast({
+        title: "Error logging out",
+        variant: "destructive",
+        duration: 2000,
+      });
+    }
+  };
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -48,12 +69,32 @@ const Navbar = () => {
                 </Link>
               );
             })}
-            <ThemeToggle />
+            <div className="flex items-center space-x-2">
+              <ThemeToggle />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleLogout}
+                className="w-9 px-0"
+              >
+                <LogOut className="h-[1.2rem] w-[1.2rem]" />
+                <span className="sr-only">Log out</span>
+              </Button>
+            </div>
           </div>
 
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center space-x-2">
             <ThemeToggle />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleLogout}
+              className="w-9 px-0"
+            >
+              <LogOut className="h-[1.2rem] w-[1.2rem]" />
+              <span className="sr-only">Log out</span>
+            </Button>
             <Button
               variant="ghost"
               size="icon"
