@@ -21,7 +21,11 @@ export const CaseReferenceField = ({ form }: CaseReferenceFieldProps) => {
         <FormItem>
           <FormLabel>Case Reference (Optional)</FormLabel>
           <FormControl>
-            <Input placeholder="Enter case reference number" {...field} />
+            <Input 
+              placeholder="Enter case reference number" 
+              {...field} 
+              value={field.value || ""}
+            />
           </FormControl>
           <FormMessage />
         </FormItem>

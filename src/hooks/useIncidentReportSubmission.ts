@@ -33,17 +33,20 @@ export const useIncidentReportSubmission = (id?: string) => {
         }));
       }
 
+      const reportData = {
+        title: data.title,
+        description: data.description,
+        incident_date: data.incident_date.toISOString(),
+        incident_time: data.incident_time,
+        main_category_id: data.main_category_id,
+        case_reference: data.case_reference || "",
+      };
+
       if (id) {
         // Update existing report
         const { error: updateError } = await supabase
           .from("reports")
-          .update({
-            title: data.title,
-            description: data.description,
-            incident_date: data.incident_date.toISOString(),
-            incident_time: data.incident_time,
-            main_category_id: data.main_category_id,
-          })
+          .update(reportData)
           .eq("id", id);
 
         if (updateError) throw updateError;
@@ -95,11 +98,7 @@ export const useIncidentReportSubmission = (id?: string) => {
         const { data: reportData, error: insertError } = await supabase
           .from("reports")
           .insert({
-            title: data.title,
-            description: data.description,
-            incident_date: data.incident_date.toISOString(),
-            incident_time: data.incident_time,
-            main_category_id: data.main_category_id,
+            ...reportData,
             user_id: user.id,
           })
           .select()

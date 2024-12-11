@@ -40,7 +40,6 @@ const IncidentReportForm = () => {
     queryFn: async () => {
       if (!id) return null;
       
-      // Fetch report data
       const { data: reportData, error: reportError } = await supabase
         .from("reports")
         .select("*, report_category_assignments(subcategory_id)")
