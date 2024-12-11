@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, Home, FilePlus, Search, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -47,10 +48,12 @@ const Navbar = () => {
                 </Link>
               );
             })}
+            <ThemeToggle />
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
+          <div className="md:hidden flex items-center space-x-2">
+            <ThemeToggle />
             <Button
               variant="ghost"
               size="icon"

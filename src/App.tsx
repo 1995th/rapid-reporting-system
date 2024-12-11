@@ -6,6 +6,7 @@ import { BrowserRouter } from "react-router-dom";
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { supabase } from "@/integrations/supabase/client";
 import { StrictMode } from "react";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import AppRoutes from "./AppRoutes";
 
 const queryClient = new QueryClient();
@@ -15,13 +16,15 @@ const App = () => (
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <SessionContextProvider supabaseClient={supabase}>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <div className="min-h-screen bg-background">
-              <AppRoutes />
-            </div>
-          </TooltipProvider>
+          <ThemeProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <div className="min-h-screen bg-background">
+                <AppRoutes />
+              </div>
+            </TooltipProvider>
+          </ThemeProvider>
         </SessionContextProvider>
       </QueryClientProvider>
     </BrowserRouter>
