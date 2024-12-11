@@ -123,13 +123,20 @@ const AuthPage = () => {
                 },
               },
             }}
-            options={{
-              emailRedirectTo: `${window.location.origin}/auth/callback`,
-              data: {
-                first_name: '',
-                last_name: '',
-              }
-            }}
+            extendedSignUpFields={[
+              {
+                id: "first_name",
+                label: "First Name",
+                type: "text",
+                required: true,
+              },
+              {
+                id: "last_name",
+                label: "Last Name",
+                type: "text",
+                required: true,
+              },
+            ]}
           />
         </div>
       </div>
