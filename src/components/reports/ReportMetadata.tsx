@@ -6,11 +6,15 @@ interface ReportMetadataProps {
   reporter: {
     first_name: string | null;
     last_name: string | null;
-  };
+  } | null;
   incidentDate: string;
 }
 
 export const ReportMetadata = ({ status, reporter, incidentDate }: ReportMetadataProps) => {
+  const officerName = reporter 
+    ? `${reporter.first_name || ''} ${reporter.last_name || ''}`.trim() 
+    : 'Not assigned';
+
   return (
     <>
       <div>
@@ -29,9 +33,7 @@ export const ReportMetadata = ({ status, reporter, incidentDate }: ReportMetadat
       </div>
       <div>
         <h3 className="font-semibold text-sm text-muted-foreground">Officer</h3>
-        <p>
-          {reporter.first_name} {reporter.last_name}
-        </p>
+        <p>{officerName}</p>
       </div>
       <div>
         <h3 className="font-semibold text-sm text-muted-foreground">Date</h3>
