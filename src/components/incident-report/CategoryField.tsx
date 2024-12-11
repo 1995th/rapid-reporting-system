@@ -10,6 +10,7 @@ import { UseFormReturn } from "react-hook-form";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface CategoryFieldProps {
   form: UseFormReturn<any>;
@@ -49,7 +50,27 @@ export const CategoryField = ({ form }: CategoryFieldProps) => {
     }
   });
 
-  if (isLoading || !categories) return null;
+  if (isLoading) {
+    return (
+      <FormItem>
+        <FormLabel>Categories</FormLabel>
+        <div className="border rounded-lg p-4">
+          <Skeleton className="h-[400px] w-full" />
+        </div>
+      </FormItem>
+    );
+  }
+
+  if (!categories?.mainCategories || !categories?.subcategories) {
+    return (
+      <FormItem>
+        <FormLabel>Categories</FormLabel>
+        <div className="border rounded-lg p-4">
+          <p className="text-sm text-muted-foreground">No categories available</p>
+        </div>
+      </FormItem>
+    );
+  }
 
   return (
     <FormField
