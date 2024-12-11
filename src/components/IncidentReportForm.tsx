@@ -13,6 +13,7 @@ import { useIncidentReportSubmission } from "@/hooks/useIncidentReportSubmission
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "./ui/skeleton";
+import { useEffect } from "react";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title is too long"),
@@ -61,7 +62,7 @@ const IncidentReportForm = () => {
   });
 
   // Update form values when existing report data is loaded
-  React.useEffect(() => {
+  useEffect(() => {
     if (existingReport) {
       form.reset({
         title: existingReport.title,
@@ -70,7 +71,7 @@ const IncidentReportForm = () => {
         incident_date: existingReport.incident_date || "",
         incident_time: existingReport.incident_time || "",
         location: existingReport.location || "",
-        files: [], // Reset files as they need to be uploaded again
+        files: undefined, // Set to undefined instead of empty array for FileList type
       });
     }
   }, [existingReport, form]);
