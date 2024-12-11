@@ -12,26 +12,41 @@ export const useIncidentReportSubmission = (id?: string) => {
 
   const handleSubmit = async (formData: ReportFormSchema) => {
     try {
+      console.log("Starting form submission with data:", formData);
+      console.log("Report ID (if editing):", id);
+      
       setIsSubmitting(true);
-      console.log("Submitting form data:", formData); // Debug log
 
       const user = (await supabase.auth.getUser()).data.user;
-      if (!user) throw new Error("No user found");
+      console.log("Current user:", user);
+      
+      if (!user) {
+        console.error("No user found");
+        throw new Error("No user found");
+      }
 
       // Handle file uploads if files are present
       let evidenceData = [];
       if (formData.files?.length) {
+        console.log("Processing files:", formData.files);
         const files = Array.from(formData.files);
-        const uploadPromises = files.map(file => 
-          uploadFileToStorage(file, user.id)
-        );
+        const uploadPromises = files.map(file => {
+          console.log("Uploading file:", file.name);
+          return uploadFileToStorage(file, user.id);
+        });
         
-        const uploadedFiles = await Promise.all(uploadPromises);
-        evidenceData = uploadedFiles.map(file => ({
-          file_url: file.file_url,
-          file_type: file.file_type,
-          description: `Uploaded file: ${file.file_name}`
-        }));
+        try {
+          const uploadedFiles = await Promise.all(uploadPromises);
+          console.log("Files uploaded successfully:", uploadedFiles);
+          evidenceData = uploadedFiles.map(file => ({
+            file_url: file.file_url,
+            file_type: file.file_type,
+            description: `Uploaded file: ${file.file_name}`
+          }));
+        } catch (uploadError) {
+          console.error("Error uploading files:", uploadError);
+          throw uploadError;
+        }
       }
 
       // Prepare report data
@@ -45,11 +60,11 @@ export const useIncidentReportSubmission = (id?: string) => {
         user_id: user.id,
       };
 
-      console.log("Report payload:", reportPayload); // Debug log
+      console.log("Prepared report payload:", reportPayload);
 
       let report;
       if (id) {
-        // Update existing report
+        console.log("Updating existing report with ID:", id);
         const { data: updatedReport, error: updateError } = await supabase
           .from("reports")
           .update(reportPayload)
@@ -61,9 +76,10 @@ export const useIncidentReportSubmission = (id?: string) => {
           console.error("Error updating report:", updateError);
           throw updateError;
         }
+        console.log("Report updated successfully:", updatedReport);
         report = updatedReport;
       } else {
-        // Create new report
+        console.log("Creating new report");
         const { data: newReport, error: insertError } = await supabase
           .from("reports")
           .insert(reportPayload)
@@ -74,13 +90,16 @@ export const useIncidentReportSubmission = (id?: string) => {
           console.error("Error creating report:", insertError);
           throw insertError;
         }
+        console.log("New report created successfully:", newReport);
         report = newReport;
       }
 
       // Handle category assignments
       if (formData.categories?.length && report) {
-        // Delete existing assignments if updating
+        console.log("Processing category assignments:", formData.categories);
+        
         if (id) {
+          console.log("Deleting existing category assignments for report:", id);
           const { error: deleteError } = await supabase
             .from("report_category_assignments")
             .delete()
@@ -92,17 +111,17 @@ export const useIncidentReportSubmission = (id?: string) => {
           }
         }
 
-        // Insert new category assignments
+        const categoryAssignments = formData.categories.map(subcategoryId => ({
+          report_id: report.id,
+          subcategory_id: subcategoryId,
+          main_category_id: formData.main_category_id,
+          is_primary: false,
+        }));
+
+        console.log("Inserting new category assignments:", categoryAssignments);
         const { error: categoryError } = await supabase
           .from("report_category_assignments")
-          .insert(
-            formData.categories.map(subcategoryId => ({
-              report_id: report.id,
-              subcategory_id: subcategoryId,
-              main_category_id: formData.main_category_id,
-              is_primary: false,
-            }))
-          );
+          .insert(categoryAssignments);
 
         if (categoryError) {
           console.error("Error assigning categories:", categoryError);
@@ -112,15 +131,16 @@ export const useIncidentReportSubmission = (id?: string) => {
 
       // Handle evidence uploads
       if (evidenceData.length > 0 && report) {
+        console.log("Saving evidence data:", evidenceData);
+        const evidenceRecords = evidenceData.map(evidence => ({
+          ...evidence,
+          report_id: report.id,
+          uploaded_by: user.id,
+        }));
+
         const { error: evidenceError } = await supabase
           .from("evidence")
-          .insert(
-            evidenceData.map(evidence => ({
-              ...evidence,
-              report_id: report.id,
-              uploaded_by: user.id,
-            }))
-          );
+          .insert(evidenceRecords);
 
         if (evidenceError) {
           console.error("Error uploading evidence:", evidenceError);
@@ -128,6 +148,7 @@ export const useIncidentReportSubmission = (id?: string) => {
         }
       }
 
+      console.log("Report submission completed successfully");
       toast({
         title: id ? "Report updated" : "Report submitted",
         description: id 
@@ -137,7 +158,7 @@ export const useIncidentReportSubmission = (id?: string) => {
 
       navigate("/dashboard");
     } catch (error) {
-      console.error("Error in form submission:", error);
+      console.error("Final error in form submission:", error);
       toast({
         title: "Error",
         description: "There was an error submitting your report. Please try again.",
