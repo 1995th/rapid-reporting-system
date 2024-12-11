@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Shield, ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -13,10 +13,11 @@ const Landing = () => {
       
       {/* Main content */}
       <div className="relative z-10 container mx-auto px-4 min-h-screen flex flex-col items-center justify-center">
-        {/* Logo at the top */}
-        <div className="mb-12 animate-fade-in">
-          <div className="glass-morphism p-6 rounded-full">
-            <Shield className="w-20 h-20 text-primary" />
+        {/* Logo and text at the top */}
+        <div className="mb-12 animate-fade-in text-center">
+          <div className="glass-morphism p-6 rounded-full inline-flex flex-col items-center">
+            <h1 className="text-2xl font-bold text-primary">IncidentFlow</h1>
+            <p className="text-sm text-muted-foreground mt-2">Incident Management System</p>
           </div>
         </div>
 
