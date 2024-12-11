@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +14,6 @@ import { TimeField } from "./incident-report/TimeField";
 import { CategoryField } from "./incident-report/CategoryField";
 import { FileUploadField } from "./incident-report/FileUploadField";
 import { ReportFormSchema, reportFormSchema } from "@/lib/validations/report";
-import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
 const IncidentReportForm = () => {
@@ -93,6 +92,7 @@ const IncidentReportForm = () => {
       };
 
       if (id) {
+        // Update existing report
         const { error: updateError } = await supabase
           .from("reports")
           .update(reportData)
@@ -101,10 +101,12 @@ const IncidentReportForm = () => {
         if (updateError) throw updateError;
 
         // Delete existing category assignments
-        await supabase
+        const { error: deleteError } = await supabase
           .from("report_category_assignments")
           .delete()
           .eq("report_id", id);
+
+        if (deleteError) throw deleteError;
 
         // Insert new category assignments
         if (data.categories?.length) {
@@ -121,7 +123,13 @@ const IncidentReportForm = () => {
 
           if (categoryError) throw categoryError;
         }
+
+        toast({
+          title: "Success",
+          description: "Report updated successfully",
+        });
       } else {
+        // Create new report
         const { data: newReport, error: insertError } = await supabase
           .from("reports")
           .insert(reportData)
@@ -144,12 +152,12 @@ const IncidentReportForm = () => {
 
           if (categoryError) throw categoryError;
         }
-      }
 
-      toast({
-        title: "Success",
-        description: id ? "Report updated successfully" : "Report submitted successfully",
-      });
+        toast({
+          title: "Success",
+          description: "Report submitted successfully",
+        });
+      }
 
       navigate("/dashboard");
     } catch (error: any) {
