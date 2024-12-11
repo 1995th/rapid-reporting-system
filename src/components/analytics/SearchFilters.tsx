@@ -1,5 +1,4 @@
 import { Input } from "@/components/ui/input";
-import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 import {
   Select,
   SelectContent,
@@ -7,12 +6,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { SearchFilters as SearchFiltersType } from "./types";
+import { DatePickerWithRange } from "@/components/ui/date-range-picker";
+import { DateRange } from "react-day-picker";
 
 interface SearchFiltersProps {
-  filters: SearchFiltersType;
+  filters: {
+    title: string;
+    categoryId: string | null;
+    dateRange: DateRange | undefined;
+  };
   categories: Array<{ id: string; name: string }>;
-  onFiltersChange: (filters: SearchFiltersType) => void;
+  onFiltersChange: (filters: {
+    title: string;
+    categoryId: string | null;
+    dateRange: DateRange | undefined;
+  }) => void;
 }
 
 export function SearchFiltersComponent({
@@ -21,7 +29,11 @@ export function SearchFiltersComponent({
   onFiltersChange,
 }: SearchFiltersProps) {
   return (
-    <div className="flex flex-col space-y-4 sm:space-y-0 sm:grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+    <div 
+      className="flex flex-col space-y-4 sm:space-y-0 sm:grid sm:grid-cols-2 md:grid-cols-3 gap-4"
+      role="search"
+      aria-label="Report filters"
+    >
       <Input
         placeholder="Search by title..."
         value={filters.title}
@@ -29,6 +41,7 @@ export function SearchFiltersComponent({
           onFiltersChange({ ...filters, title: e.target.value })
         }
         className="w-full"
+        aria-label="Search reports by title"
       />
       <Select
         value={filters.categoryId || "all"}
@@ -39,13 +52,17 @@ export function SearchFiltersComponent({
           })
         }
       >
-        <SelectTrigger className="w-full">
+        <SelectTrigger className="w-full" aria-label="Filter by category">
           <SelectValue placeholder="Select category" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Categories</SelectItem>
           {categories?.map((category) => (
-            <SelectItem key={category.id} value={category.id}>
+            <SelectItem 
+              key={category.id} 
+              value={category.id}
+              role="option"
+            >
               {category.name}
             </SelectItem>
           ))}

@@ -21,7 +21,7 @@ export const ReportPagination = ({
   if (totalPages <= 1) return null;
 
   return (
-    <Pagination className="w-full flex justify-center">
+    <Pagination className="w-full flex justify-center" role="navigation" aria-label="Report pagination">
       <PaginationContent className="flex flex-wrap gap-2 justify-center">
         <PaginationItem>
           <PaginationPrevious
@@ -31,6 +31,13 @@ export const ReportPagination = ({
               onPageChange(Math.max(1, currentPage - 1));
             }}
             aria-disabled={currentPage === 1}
+            aria-label="Previous page"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onPageChange(Math.max(1, currentPage - 1));
+              }
+            }}
           />
         </PaginationItem>
         {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
@@ -42,6 +49,14 @@ export const ReportPagination = ({
                 onPageChange(page);
               }}
               isActive={currentPage === page}
+              aria-current={currentPage === page ? "page" : undefined}
+              aria-label={`Page ${page}`}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onPageChange(page);
+                }
+              }}
             >
               {page}
             </PaginationLink>
@@ -55,6 +70,13 @@ export const ReportPagination = ({
               onPageChange(Math.min(totalPages, currentPage + 1));
             }}
             aria-disabled={currentPage === totalPages}
+            aria-label="Next page"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onPageChange(Math.min(totalPages, currentPage + 1));
+              }
+            }}
           />
         </PaginationItem>
       </PaginationContent>

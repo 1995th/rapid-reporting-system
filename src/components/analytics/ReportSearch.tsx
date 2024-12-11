@@ -19,7 +19,6 @@ const ReportSearch = () => {
     dateRange: undefined,
   });
 
-  // Fetch categories for the dropdown
   const { data: categories } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
@@ -31,7 +30,6 @@ const ReportSearch = () => {
     },
   });
 
-  // Fetch filtered reports using the custom hook
   const { data: reportData, isLoading } = useReportData(filters, currentPage);
 
   const totalPages = reportData?.count
@@ -39,11 +37,11 @@ const ReportSearch = () => {
     : 0;
 
   if (isLoading) {
-    return <Skeleton className="w-full h-[400px]" />;
+    return <Skeleton className="w-full h-[400px]" role="progressbar" aria-label="Loading reports" />;
   }
 
   return (
-    <Card>
+    <Card role="region" aria-label="Report search section">
       <CardHeader>
         <CardTitle className="text-lg md:text-xl">Search Reports</CardTitle>
       </CardHeader>

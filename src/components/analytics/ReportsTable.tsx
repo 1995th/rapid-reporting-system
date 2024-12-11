@@ -61,16 +61,16 @@ export const ReportsTable = ({ reports }: ReportsTableProps) => {
   };
 
   return (
-    <div className="overflow-x-auto rounded-md border">
+    <div className="overflow-x-auto rounded-md border" role="region" aria-label="Reports table">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="min-w-[150px]">Title</TableHead>
-            <TableHead className="hidden md:table-cell">Category</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="hidden sm:table-cell">Reporter</TableHead>
-            <TableHead className="hidden lg:table-cell">Date</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead className="min-w-[150px]" scope="col">Title</TableHead>
+            <TableHead className="hidden md:table-cell" scope="col">Category</TableHead>
+            <TableHead scope="col">Status</TableHead>
+            <TableHead className="hidden sm:table-cell" scope="col">Reporter</TableHead>
+            <TableHead className="hidden lg:table-cell" scope="col">Date</TableHead>
+            <TableHead className="text-right" scope="col">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -79,6 +79,15 @@ export const ReportsTable = ({ reports }: ReportsTableProps) => {
               <TableCell 
                 className="font-medium cursor-pointer hover:underline min-w-[150px]"
                 onClick={() => navigate(`/reports/${report.id}`)}
+                role="link"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    navigate(`/reports/${report.id}`);
+                  }
+                }}
+                aria-label={`View report: ${report.title}`}
               >
                 {report.title}
               </TableCell>
@@ -86,7 +95,11 @@ export const ReportsTable = ({ reports }: ReportsTableProps) => {
                 {report.case_categories?.name}
               </TableCell>
               <TableCell>
-                <Badge className={getStatusColor(report.status)}>
+                <Badge 
+                  className={getStatusColor(report.status)}
+                  role="status"
+                  aria-label={`Status: ${report.status}`}
+                >
                   {report.status}
                 </Badge>
               </TableCell>
@@ -101,23 +114,49 @@ export const ReportsTable = ({ reports }: ReportsTableProps) => {
               <TableCell className="text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="whitespace-nowrap">
-                      Update Status <ChevronDown className="ml-2 h-4 w-4" />
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="whitespace-nowrap"
+                      aria-label="Update report status"
+                    >
+                      Update Status <ChevronDown className="ml-2 h-4 w-4" aria-hidden="true" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem
                       onClick={() => updateReportStatus(report.id, "approved")}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          updateReportStatus(report.id, "approved");
+                        }
+                      }}
+                      role="menuitem"
                     >
                       Approve
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => updateReportStatus(report.id, "rejected")}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          updateReportStatus(report.id, "rejected");
+                        }
+                      }}
+                      role="menuitem"
                     >
                       Reject
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => updateReportStatus(report.id, "pending")}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          updateReportStatus(report.id, "pending");
+                        }
+                      }}
+                      role="menuitem"
                     >
                       Mark as Pending
                     </DropdownMenuItem>
