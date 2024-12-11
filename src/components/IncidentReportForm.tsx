@@ -13,6 +13,7 @@ import { DateField } from "./incident-report/DateField";
 import { TimeField } from "./incident-report/TimeField";
 import { CategoryField } from "./incident-report/CategoryField";
 import { FileUploadField } from "./incident-report/FileUploadField";
+import { CaseReferenceField } from "./incident-report/CaseReferenceField";
 import { useIncidentReportSubmission } from "@/hooks/useIncidentReportSubmission";
 import { ReportFormSchema, reportFormSchema } from "@/lib/validations/report";
 
@@ -29,6 +30,7 @@ const IncidentReportForm = () => {
       incident_time: "",
       main_category_id: "",
       categories: [],
+      case_reference: "",
       files: undefined,
     },
   });
@@ -66,6 +68,7 @@ const IncidentReportForm = () => {
         incident_time: report.incident_time,
         main_category_id: report.main_category_id,
         categories: report.categories,
+        case_reference: report.case_reference,
       });
     }
   }, [report, form]);
@@ -87,6 +90,7 @@ const IncidentReportForm = () => {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <CaseReferenceField form={form} />
             <TitleField form={form} />
             <DescriptionField form={form} />
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

@@ -1,8 +1,9 @@
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Upload } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import * as z from "zod";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ACCEPTED_FILE_TYPES = [
@@ -39,14 +40,33 @@ interface FileUploadFieldProps {
 }
 
 export const FileUploadField = ({ form }: FileUploadFieldProps) => {
-  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      form.setValue("files", files);
-      setSelectedFiles(Array.from(files).map(file => file.name));
+      const fileArray = Array.from(files);
+      setSelectedFiles(prev => [...prev, ...fileArray]);
+      
+      // Create a new FileList-like object with all files
+      const dataTransfer = new DataTransfer();
+      [...selectedFiles, ...fileArray].forEach(file => {
+        dataTransfer.items.add(file);
+      });
+      form.setValue("files", dataTransfer.files);
     }
+  };
+
+  const handleDeleteFile = (indexToDelete: number) => {
+    const newFiles = selectedFiles.filter((_, index) => index !== indexToDelete);
+    setSelectedFiles(newFiles);
+
+    // Update the form value with the new FileList
+    const dataTransfer = new DataTransfer();
+    newFiles.forEach(file => {
+      dataTransfer.items.add(file);
+    });
+    form.setValue("files", dataTransfer.files.length > 0 ? dataTransfer.files : undefined);
   };
 
   return (
@@ -86,9 +106,20 @@ export const FileUploadField = ({ form }: FileUploadFieldProps) => {
               {selectedFiles.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-sm font-medium">Selected files:</p>
-                  <ul className="text-sm text-gray-500">
-                    {selectedFiles.map((fileName, index) => (
-                      <li key={index}>{fileName}</li>
+                  <ul className="space-y-2">
+                    {selectedFiles.map((file, index) => (
+                      <li key={index} className="flex items-center justify-between text-sm text-gray-500 bg-gray-50 dark:bg-gray-800 p-2 rounded">
+                        <span className="truncate">{file.name}</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteFile(index)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </li>
                     ))}
                   </ul>
                 </div>
