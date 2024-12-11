@@ -101,10 +101,7 @@ const AuthPage = () => {
             }}
             providers={[]}
             redirectTo={`${window.location.origin}/auth/callback`}
-            additionalData={{
-              first_name: '',
-              last_name: '',
-            }}
+            view="sign_up"
             localization={{
               variables: {
                 sign_up: {
@@ -126,23 +123,13 @@ const AuthPage = () => {
                 },
               },
             }}
-            view="sign_up"
-            customFields={[
-              {
-                key: 'first_name',
-                name: 'first_name',
-                type: 'text',
-                label: 'First Name',
-                required: true,
-              },
-              {
-                key: 'last_name',
-                name: 'last_name',
-                type: 'text',
-                label: 'Last Name',
-                required: true,
-              },
-            ]}
+            options={{
+              emailRedirectTo: `${window.location.origin}/auth/callback`,
+              data: {
+                first_name: '',
+                last_name: '',
+              }
+            }}
           />
         </div>
       </div>
