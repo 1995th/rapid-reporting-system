@@ -13,14 +13,6 @@ const Landing = () => {
       
       {/* Main content */}
       <div className="relative z-10 container mx-auto px-4 min-h-screen flex flex-col items-center justify-center">
-        {/* Logo and text at the top */}
-        <div className="mb-12 animate-fade-in text-center">
-          <div className="glass-morphism p-6 rounded-full inline-flex flex-col items-center">
-            <h1 className="text-2xl font-bold text-primary">IncidentFlow</h1>
-            <p className="text-sm text-muted-foreground mt-2">Incident Management System</p>
-          </div>
-        </div>
-
         <div className="space-y-8 text-center max-w-3xl">
           <div className="space-y-6">
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight animate-fade-in">
