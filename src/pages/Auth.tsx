@@ -126,6 +126,23 @@ const AuthPage = () => {
                 },
               },
             }}
+            view="sign_up"
+            customFields={[
+              {
+                key: 'first_name',
+                name: 'first_name',
+                type: 'text',
+                label: 'First Name',
+                required: true,
+              },
+              {
+                key: 'last_name',
+                name: 'last_name',
+                type: 'text',
+                label: 'Last Name',
+                required: true,
+              },
+            ]}
           />
         </div>
       </div>
