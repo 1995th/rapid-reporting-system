@@ -22,9 +22,9 @@ export const MainCategoryGroup = ({
   onSubcategoryChange,
 }: MainCategoryGroupProps) => {
   return (
-    <div className="space-y-2">
-      <h4 className="font-medium text-sm mb-2">{mainCategory.name}</h4>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+    <div className="space-y-2 w-full">
+      <h4 className="font-medium text-base">{mainCategory.name}</h4>
+      <div className="grid grid-cols-1 gap-2">
         {subcategories.map((sub) => (
           <SubcategoryCheckbox
             key={sub.id}
