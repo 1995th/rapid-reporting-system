@@ -10,8 +10,12 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
+import { useTheme } from "@/contexts/ThemeContext";
 
 const ReportMetrics = () => {
+  const { theme } = useTheme();
+  const isDarkMode = theme === 'dark';
+
   const { data: reportsByCategory, isLoading: loadingCategories } = useQuery({
     queryKey: ["reportsByCategory"],
     queryFn: async () => {
@@ -48,6 +52,7 @@ const ReportMetrics = () => {
       spacingBottom: 10,
       spacingLeft: 10,
       spacingRight: 10,
+      backgroundColor: 'transparent',
     },
     title: {
       text: undefined
@@ -55,29 +60,40 @@ const ReportMetrics = () => {
     xAxis: {
       categories: reportsByCategory ? Object.keys(reportsByCategory) : [],
       title: {
-        text: 'Categories'
+        text: 'Categories',
+        style: {
+          color: isDarkMode ? '#e5e7eb' : '#374151'
+        }
       },
       labels: {
         style: {
-          fontSize: '12px'
+          fontSize: '12px',
+          color: isDarkMode ? '#9ca3af' : '#6b7280'
         }
-      }
+      },
+      lineColor: isDarkMode ? '#374151' : '#e5e7eb',
+      tickColor: isDarkMode ? '#374151' : '#e5e7eb'
     },
     yAxis: {
       title: {
-        text: 'Number of Reports'
+        text: 'Number of Reports',
+        style: {
+          color: isDarkMode ? '#e5e7eb' : '#374151'
+        }
       },
       labels: {
         style: {
-          fontSize: '12px'
+          fontSize: '12px',
+          color: isDarkMode ? '#9ca3af' : '#6b7280'
         }
-      }
+      },
+      gridLineColor: isDarkMode ? '#374151' : '#e5e7eb'
     },
     series: [{
       name: 'Reports',
       type: 'column',
       data: reportsByCategory ? Object.values(reportsByCategory) : [],
-      color: '#0ea5e9'
+      color: isDarkMode ? '#60a5fa' : '#3b82f6'
     }],
     credits: {
       enabled: false
@@ -92,7 +108,12 @@ const ReportMetrics = () => {
     },
     tooltip: {
       headerFormat: '<b>{point.x}</b><br/>',
-      pointFormat: '{point.y} reports'
+      pointFormat: '{point.y} reports',
+      backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+      style: {
+        color: isDarkMode ? '#e5e7eb' : '#374151'
+      },
+      borderColor: isDarkMode ? '#374151' : '#e5e7eb'
     }
   };
 
