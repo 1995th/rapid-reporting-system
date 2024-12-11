@@ -20,14 +20,15 @@ export const UserReportsSection = ({ userId }: { userId: string }) => {
     queryFn: async () => {
       let query = supabase
         .from("reports")
-        .select(
-          `
+        .select(`
           *,
-          case_categories (
-            name
+          report_category_assignments!report_category_assignments_report_id_fkey (
+            case_categories (
+              name
+            ),
+            is_primary
           )
-        `
-        )
+        `)
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
 

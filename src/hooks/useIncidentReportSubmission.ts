@@ -33,6 +33,7 @@ export const useIncidentReportSubmission = () => {
         incident_time: values.incident_time || null,
         location: values.location || null,
         user_id: user.id,
+        category_id: values.primary_category_id, // Keep this for backward compatibility
       };
 
       // Create or update report

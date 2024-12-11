@@ -2,14 +2,19 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 
+interface CategoryAssignment {
+  case_categories: {
+    name: string;
+  };
+  is_primary: boolean;
+}
+
 interface Report {
   id: string;
   title: string;
   status: string;
   incident_date: string;
-  case_categories: {
-    name: string;
-  };
+  report_category_assignments: CategoryAssignment[];
 }
 
 interface ReportsListProps {
@@ -27,6 +32,13 @@ export const ReportsList = ({ reports }: ReportsListProps) => {
     );
   }
 
+  const getPrimaryCategory = (report: Report) => {
+    const primaryAssignment = report.report_category_assignments?.find(
+      (assignment) => assignment.is_primary
+    );
+    return primaryAssignment?.case_categories.name || "Uncategorized";
+  };
+
   return (
     <div className="space-y-4">
       {reports.map((report) => (
@@ -39,7 +51,7 @@ export const ReportsList = ({ reports }: ReportsListProps) => {
             <div className="space-y-1">
               <h3 className="font-medium">{report.title}</h3>
               <p className="text-sm text-muted-foreground">
-                Category: {report.case_categories?.name}
+                Category: {getPrimaryCategory(report)}
               </p>
               <p className="text-sm text-muted-foreground">
                 {report.incident_date
