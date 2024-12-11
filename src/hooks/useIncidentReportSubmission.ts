@@ -53,26 +53,50 @@ export const useIncidentReportSubmission = () => {
 
       // Handle category assignments
       if (id) {
-        // Delete existing assignments
-        await supabase
+        // Delete existing assignments for update case
+        const { error: deleteError } = await supabase
           .from("report_category_assignments")
           .delete()
           .eq("report_id", id);
+        
+        if (deleteError) throw deleteError;
       }
 
-      // Insert secondary category assignments
+      // Insert category assignments if categories are selected
       if (values.secondary_categories?.length > 0) {
-        const secondaryAssignments = values.secondary_categories.map(
+        const categoryAssignments = values.secondary_categories.map(
           (subcategoryId: string) => ({
             report_id: report.id,
-            main_category_id: values.primary_category_id,
             subcategory_id: subcategoryId,
+            main_category_id: null, // This will be set based on the subcategory's main_category_id
             is_primary: false,
           })
         );
-        await supabase
+
+        // Get main category IDs for the selected subcategories
+        const { data: subcategories, error: subcategoriesError } = await supabase
+          .from("subcategories")
+          .select("id, main_category_id")
+          .in("id", values.secondary_categories);
+
+        if (subcategoriesError) throw subcategoriesError;
+
+        // Map main category IDs to assignments
+        const assignmentsWithMainCategories = categoryAssignments.map(assignment => {
+          const subcategory = subcategories.find(
+            (sub: any) => sub.id === assignment.subcategory_id
+          );
+          return {
+            ...assignment,
+            main_category_id: subcategory.main_category_id,
+          };
+        });
+
+        const { error: assignmentError } = await supabase
           .from("report_category_assignments")
-          .insert(secondaryAssignments);
+          .insert(assignmentsWithMainCategories);
+
+        if (assignmentError) throw assignmentError;
       }
 
       // Handle evidence uploads if there are any files
@@ -82,7 +106,12 @@ export const useIncidentReportSubmission = () => {
           report_id: report.id,
           uploaded_by: user.id,
         }));
-        await supabase.from("evidence").insert(evidenceData);
+        
+        const { error: evidenceError } = await supabase
+          .from("evidence")
+          .insert(evidenceData);
+
+        if (evidenceError) throw evidenceError;
       }
 
       toast({
@@ -92,6 +121,7 @@ export const useIncidentReportSubmission = () => {
 
       navigate("/");
     } catch (error: any) {
+      console.error("Submission error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to submit report",
