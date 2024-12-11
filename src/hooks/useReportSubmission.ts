@@ -10,11 +10,10 @@ export const useReportSubmission = (reportId?: string) => {
   const { toast } = useToast();
 
   const handleSubmit = async (data: ReportFormSchema) => {
-    console.log("Starting report submission with data:", data);
-    console.log("Report ID:", reportId);
-    
     try {
       setIsSubmitting(true);
+      console.log("Starting report submission with data:", data);
+      
       const { data: { user } } = await supabase.auth.getUser();
       console.log("Current user:", user);
 
@@ -27,7 +26,6 @@ export const useReportSubmission = (reportId?: string) => {
         return;
       }
 
-      let finalReportId = reportId;
       const reportData = {
         title: data.title,
         description: data.description,
@@ -37,16 +35,22 @@ export const useReportSubmission = (reportId?: string) => {
         user_id: user.id,
       };
 
+      console.log("Prepared report data:", reportData);
+
+      let finalReportId = reportId;
+      let updateError = null;
+
       if (reportId) {
         console.log("Updating existing report:", reportId);
-        const { error: updateError } = await supabase
+        const { error } = await supabase
           .from("reports")
           .update(reportData)
           .eq("id", reportId);
 
-        if (updateError) {
-          console.error("Error updating report:", updateError);
-          throw updateError;
+        updateError = error;
+        if (error) {
+          console.error("Error updating report:", error);
+          throw error;
         }
       } else {
         console.log("Creating new report");
@@ -66,14 +70,20 @@ export const useReportSubmission = (reportId?: string) => {
       }
 
       // Handle category assignments
-      if (data.categories?.length && finalReportId) {
-        console.log("Processing category assignments");
+      if (finalReportId && data.categories?.length) {
+        console.log("Processing category assignments for report:", finalReportId);
+        
         if (reportId) {
           console.log("Deleting existing category assignments");
-          await supabase
+          const { error: deleteError } = await supabase
             .from("report_category_assignments")
             .delete()
             .eq("report_id", reportId);
+
+          if (deleteError) {
+            console.error("Error deleting category assignments:", deleteError);
+            throw deleteError;
+          }
         }
 
         const categoryAssignments = data.categories.map(subcategoryId => ({
@@ -94,7 +104,7 @@ export const useReportSubmission = (reportId?: string) => {
         }
       }
 
-      // Handle file uploads
+      // Handle file uploads if present
       if (data.files?.length) {
         console.log("Processing file uploads");
         const files = Array.from(data.files);
