@@ -69,6 +69,11 @@ const IncidentReportForm = () => {
     }
   }, [report, form]);
 
+  const onSubmit = async (data: ReportFormSchema) => {
+    console.log("Form submitted with data:", data);
+    await handleReportSubmit(data);
+  };
+
   return (
     <div className="space-y-4">
       <BackButton />
@@ -85,7 +90,7 @@ const IncidentReportForm = () => {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleReportSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <TitleField form={form} />
             <DescriptionField form={form} />
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
