@@ -53,7 +53,7 @@ export const FileUploadField = ({ form }: FileUploadFieldProps) => {
     <FormField
       control={form.control}
       name="files"
-      render={({ field: { onChange, ...field } }) => (
+      render={() => (
         <FormItem>
           <FormLabel>Attachments (Optional)</FormLabel>
           <FormControl>
@@ -80,7 +80,6 @@ export const FileUploadField = ({ form }: FileUploadFieldProps) => {
                     multiple
                     accept={ACCEPTED_FILE_TYPES.join(",")}
                     onChange={handleFileChange}
-                    {...field}
                   />
                 </label>
               </div>
