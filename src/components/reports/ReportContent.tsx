@@ -1,14 +1,15 @@
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ReportContentProps {
   report: {
+    id: string;
     title: string;
     status: string;
-    case_categories: {
-      name: string;
-    };
     profiles: {
       first_name: string;
       last_name: string;
@@ -19,6 +20,30 @@ interface ReportContentProps {
 }
 
 export const ReportContent = ({ report }: ReportContentProps) => {
+  const { data: categoryData, isLoading: isCategoryLoading } = useQuery({
+    queryKey: ["report-categories", report.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("report_category_assignments")
+        .select(`
+          main_categories (
+            id,
+            name
+          ),
+          subcategories (
+            id,
+            name
+          ),
+          is_primary
+        `)
+        .eq("report_id", report.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   return (
     <Card>
       <CardHeader>
@@ -28,7 +53,18 @@ export const ReportContent = ({ report }: ReportContentProps) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <h3 className="font-semibold text-sm text-muted-foreground">Category</h3>
-            <p>{report.case_categories?.name}</p>
+            {isCategoryLoading ? (
+              <Skeleton className="h-8 w-32" />
+            ) : categoryData ? (
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Main Category:</p>
+                <p>{categoryData.main_categories?.name || "Uncategorized"}</p>
+                <p className="text-sm text-muted-foreground mt-2">Subcategory:</p>
+                <p>{categoryData.subcategories?.name || "None"}</p>
+              </div>
+            ) : (
+              <p>No category assigned</p>
+            )}
           </div>
           <div>
             <h3 className="font-semibold text-sm text-muted-foreground">Status</h3>
