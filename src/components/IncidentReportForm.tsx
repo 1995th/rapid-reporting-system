@@ -7,9 +7,20 @@ import { TimeField } from "./incident-report/TimeField";
 import { DescriptionField } from "./incident-report/DescriptionField";
 import { FileUploadField } from "./incident-report/FileUploadField";
 import { useIncidentReportForm } from "@/hooks/useIncidentReportForm";
+import { Skeleton } from "./ui/skeleton";
 
 const IncidentReportForm = () => {
-  const { form, onSubmit, isEditing } = useIncidentReportForm();
+  const { form, onSubmit, isEditing, isLoading } = useIncidentReportForm();
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-32 w-full" />
+      </div>
+    );
+  }
 
   return (
     <Form {...form}>

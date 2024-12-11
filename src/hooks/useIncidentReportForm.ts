@@ -28,10 +28,11 @@ export const useIncidentReportForm = () => {
   });
 
   // Fetch existing report data if editing
-  useQuery({
+  const { isLoading } = useQuery({
     queryKey: ["report", id],
     queryFn: async () => {
       if (!id) return null;
+      console.log("Fetching report data for ID:", id);
 
       const { data: report, error } = await supabase
         .from("reports")
@@ -45,7 +46,12 @@ export const useIncidentReportForm = () => {
         .eq("id", id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching report:", error);
+        throw error;
+      }
+
+      console.log("Fetched report data:", report);
       return report;
     },
     enabled: !!id,
@@ -72,7 +78,16 @@ export const useIncidentReportForm = () => {
 
   const onSubmit = async (data: ReportFormSchema) => {
     try {
-      if (!session?.user?.id) throw new Error("No user found");
+      if (!session?.user?.id) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to submit a report",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log("Submitting form data:", data);
 
       const reportData = {
         title: data.title,
@@ -85,6 +100,7 @@ export const useIncidentReportForm = () => {
       };
 
       if (id) {
+        console.log("Updating report:", id);
         const { error: rpcError } = await supabase.rpc("update_report_with_categories", {
           p_report_id: id,
           p_report_data: reportData,
@@ -95,20 +111,27 @@ export const useIncidentReportForm = () => {
           }))
         });
 
-        if (rpcError) throw rpcError;
+        if (rpcError) {
+          console.error("Error updating report:", rpcError);
+          throw rpcError;
+        }
 
         toast({
           title: "Success",
           description: "Report updated successfully",
         });
       } else {
+        console.log("Creating new report");
         const { data: newReport, error: reportError } = await supabase
           .from("reports")
           .insert(reportData)
           .select()
           .single();
 
-        if (reportError) throw reportError;
+        if (reportError) {
+          console.error("Error creating report:", reportError);
+          throw reportError;
+        }
 
         if (data.categories.length > 0) {
           const { error: categoryError } = await supabase
@@ -122,7 +145,10 @@ export const useIncidentReportForm = () => {
               }))
             );
 
-          if (categoryError) throw categoryError;
+          if (categoryError) {
+            console.error("Error creating category assignments:", categoryError);
+            throw categoryError;
+          }
         }
 
         if (data.files && data.files.length > 0) {
@@ -132,7 +158,10 @@ export const useIncidentReportForm = () => {
               .from("evidence")
               .upload(fileName, file);
 
-            if (uploadError) throw uploadError;
+            if (uploadError) {
+              console.error("Error uploading file:", uploadError);
+              throw uploadError;
+            }
 
             const { data: fileUrl } = supabase.storage
               .from("evidence")
@@ -152,7 +181,10 @@ export const useIncidentReportForm = () => {
             .from("evidence")
             .insert(uploadedFiles);
 
-          if (evidenceError) throw evidenceError;
+          if (evidenceError) {
+            console.error("Error saving evidence:", evidenceError);
+            throw evidenceError;
+          }
         }
 
         toast({
@@ -163,7 +195,7 @@ export const useIncidentReportForm = () => {
 
       navigate("/dashboard");
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Form submission error:", error);
       toast({
         title: "Error",
         description: "Something went wrong. Please try again.",
@@ -176,5 +208,6 @@ export const useIncidentReportForm = () => {
     form,
     onSubmit,
     isEditing: !!id,
+    isLoading,
   };
 };
