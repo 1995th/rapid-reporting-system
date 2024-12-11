@@ -68,7 +68,8 @@ const IncidentReportForm = () => {
         incident_time: report.incident_time,
         main_category_id: report.main_category_id,
         categories: report.categories,
-        case_reference: report.case_reference,
+        case_reference: report.case_reference || "",
+        files: undefined,
       });
     }
   }, [report, form]);
