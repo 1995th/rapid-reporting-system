@@ -42,12 +42,12 @@ const ReportStatusMetrics = () => {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-4">
       {statuses.map((status) => (
         <Card key={status.label} className="w-full">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">
-              {status.label} Reports
+          <CardHeader className="pb-2 space-y-0">
+            <CardTitle className="text-sm md:text-base">
+              {status.label}
             </CardTitle>
           </CardHeader>
           <CardContent>

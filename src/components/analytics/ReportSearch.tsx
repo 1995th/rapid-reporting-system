@@ -19,7 +19,6 @@ const ReportSearch = () => {
     dateRange: undefined,
   });
 
-  // Fetch categories for the dropdown
   const { data: categories } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
@@ -31,7 +30,6 @@ const ReportSearch = () => {
     },
   });
 
-  // Fetch filtered reports using the custom hook
   const { data: reportData, isLoading } = useReportData(filters, currentPage);
 
   const totalPages = reportData?.count
@@ -55,7 +53,9 @@ const ReportSearch = () => {
             onFiltersChange={setFilters}
           />
 
-          <ReportsTable reports={reportData?.data || []} />
+          <div className="overflow-hidden rounded-md border">
+            <ReportsTable reports={reportData?.data || []} />
+          </div>
 
           <div className="flex justify-center mt-4">
             <ReportPagination

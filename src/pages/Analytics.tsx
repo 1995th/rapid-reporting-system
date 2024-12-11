@@ -21,17 +21,19 @@ const Analytics = () => {
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
-      <div className="mb-6 md:mb-8">
-        <h1 className="text-xl md:text-2xl font-bold tracking-tight">Analytics Dashboard</h1>
+    <div className="container mx-auto px-4 py-4 md:px-6 md:py-6 space-y-4 md:space-y-6 max-w-7xl">
+      <div className="mb-4 md:mb-8">
+        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold tracking-tight">Analytics Dashboard</h1>
         <p className="text-sm md:text-base text-muted-foreground mt-2">
           Overview of report statistics and metrics
         </p>
       </div>
 
       <div className="grid gap-4 md:gap-6">
-        <TotalReports />
-        <ReportStatusMetrics />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <TotalReports />
+          <ReportStatusMetrics />
+        </div>
         <ReportMetrics />
         <ReportSearch />
       </div>

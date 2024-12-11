@@ -21,7 +21,7 @@ export function SearchFiltersComponent({
   onFiltersChange,
 }: SearchFiltersProps) {
   return (
-    <div className="flex flex-col space-y-4 sm:space-y-0 sm:grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+    <div className="flex flex-col space-y-4">
       <Input
         placeholder="Search by title..."
         value={filters.title}

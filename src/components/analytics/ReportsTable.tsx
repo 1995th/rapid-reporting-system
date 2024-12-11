@@ -61,7 +61,7 @@ export const ReportsTable = ({ reports }: ReportsTableProps) => {
   };
 
   return (
-    <div className="overflow-x-auto rounded-md border">
+    <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
@@ -77,10 +77,15 @@ export const ReportsTable = ({ reports }: ReportsTableProps) => {
           {reports?.map((report) => (
             <TableRow key={report.id}>
               <TableCell 
-                className="font-medium cursor-pointer hover:underline min-w-[150px]"
+                className="font-medium cursor-pointer hover:underline"
                 onClick={() => navigate(`/reports/${report.id}`)}
               >
-                {report.title}
+                <div className="flex flex-col">
+                  <span>{report.title}</span>
+                  <span className="text-sm text-muted-foreground md:hidden">
+                    {report.case_categories?.name}
+                  </span>
+                </div>
               </TableCell>
               <TableCell className="hidden md:table-cell">
                 {report.case_categories?.name}
@@ -102,7 +107,9 @@ export const ReportsTable = ({ reports }: ReportsTableProps) => {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" className="whitespace-nowrap">
-                      Update Status <ChevronDown className="ml-2 h-4 w-4" />
+                      <span className="hidden sm:inline">Update Status</span>
+                      <span className="sm:hidden">Status</span>
+                      <ChevronDown className="ml-2 h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
