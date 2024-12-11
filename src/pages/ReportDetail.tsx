@@ -53,10 +53,32 @@ const ReportDetail = () => {
 
   const deleteReportMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("reports").delete().eq("id", id);
-      if (error) throw error;
+      // First, delete all evidence records associated with this report
+      const { error: evidenceError } = await supabase
+        .from("evidence")
+        .delete()
+        .eq("report_id", id);
+
+      if (evidenceError) throw evidenceError;
+
+      // Then, delete all user activities associated with this report
+      const { error: activitiesError } = await supabase
+        .from("user_activities")
+        .delete()
+        .eq("report_id", id);
+
+      if (activitiesError) throw activitiesError;
+
+      // Finally, delete the report itself
+      const { error: reportError } = await supabase
+        .from("reports")
+        .delete()
+        .eq("id", id);
+
+      if (reportError) throw reportError;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reports"] });
       toast({
         title: "Report deleted",
         description: "The report has been successfully deleted.",
@@ -64,12 +86,12 @@ const ReportDetail = () => {
       navigate("/analytics");
     },
     onError: (error) => {
+      console.error("Delete error:", error);
       toast({
         title: "Error",
         description: "Failed to delete the report. Please try again.",
         variant: "destructive",
       });
-      console.error("Delete error:", error);
     },
   });
 
