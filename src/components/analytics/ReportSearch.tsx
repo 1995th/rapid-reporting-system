@@ -45,10 +45,10 @@ const ReportSearch = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Search Reports</CardTitle>
+        <CardTitle className="text-lg md:text-xl">Search Reports</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-4 md:space-y-6">
           <SearchFiltersComponent
             filters={filters}
             categories={categories || []}
@@ -57,11 +57,13 @@ const ReportSearch = () => {
 
           <ReportsTable reports={reportData?.data || []} />
 
-          <ReportPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
+          <div className="flex justify-center mt-4">
+            <ReportPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
         </div>
       </CardContent>
     </Card>

@@ -21,8 +21,8 @@ export const ReportPagination = ({
   if (totalPages <= 1) return null;
 
   return (
-    <Pagination>
-      <PaginationContent>
+    <Pagination className="w-full flex justify-center">
+      <PaginationContent className="flex flex-wrap gap-2 justify-center">
         <PaginationItem>
           <PaginationPrevious
             href="#"
@@ -34,7 +34,7 @@ export const ReportPagination = ({
           />
         </PaginationItem>
         {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-          <PaginationItem key={page}>
+          <PaginationItem key={page} className="hidden sm:block">
             <PaginationLink
               href="#"
               onClick={(e) => {

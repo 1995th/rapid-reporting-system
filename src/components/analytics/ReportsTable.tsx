@@ -61,15 +61,15 @@ export const ReportsTable = ({ reports }: ReportsTableProps) => {
   };
 
   return (
-    <div className="rounded-md border">
+    <div className="overflow-x-auto rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Title</TableHead>
-            <TableHead>Category</TableHead>
+            <TableHead className="min-w-[150px]">Title</TableHead>
+            <TableHead className="hidden md:table-cell">Category</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Reporter</TableHead>
-            <TableHead>Date</TableHead>
+            <TableHead className="hidden sm:table-cell">Reporter</TableHead>
+            <TableHead className="hidden lg:table-cell">Date</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -77,21 +77,23 @@ export const ReportsTable = ({ reports }: ReportsTableProps) => {
           {reports?.map((report) => (
             <TableRow key={report.id}>
               <TableCell 
-                className="font-medium cursor-pointer hover:underline"
+                className="font-medium cursor-pointer hover:underline min-w-[150px]"
                 onClick={() => navigate(`/reports/${report.id}`)}
               >
                 {report.title}
               </TableCell>
-              <TableCell>{report.case_categories?.name}</TableCell>
+              <TableCell className="hidden md:table-cell">
+                {report.case_categories?.name}
+              </TableCell>
               <TableCell>
                 <Badge className={getStatusColor(report.status)}>
                   {report.status}
                 </Badge>
               </TableCell>
-              <TableCell>
+              <TableCell className="hidden sm:table-cell">
                 {report.profiles?.first_name} {report.profiles?.last_name}
               </TableCell>
-              <TableCell>
+              <TableCell className="hidden lg:table-cell">
                 {report.incident_date
                   ? format(new Date(report.incident_date), "MMM d, yyyy")
                   : "N/A"}
@@ -99,7 +101,7 @@ export const ReportsTable = ({ reports }: ReportsTableProps) => {
               <TableCell className="text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="whitespace-nowrap">
                       Update Status <ChevronDown className="ml-2 h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>

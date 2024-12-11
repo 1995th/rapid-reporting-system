@@ -3,16 +3,10 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-
-type StatusCount = {
-  status: string;
-  count: number;
-};
 
 const ReportStatusMetrics = () => {
   const { data: statusCounts, isLoading } = useQuery({
@@ -48,16 +42,16 @@ const ReportStatusMetrics = () => {
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
       {statuses.map((status) => (
-        <Card key={status.label}>
+        <Card key={status.label} className="w-full">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
               {status.label} Reports
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${status.color}`}>
+            <div className={`text-xl md:text-2xl font-bold ${status.color}`}>
               {status.value}
             </div>
           </CardContent>

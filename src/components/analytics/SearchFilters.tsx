@@ -21,13 +21,14 @@ export function SearchFiltersComponent({
   onFiltersChange,
 }: SearchFiltersProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="flex flex-col space-y-4 sm:space-y-0 sm:grid sm:grid-cols-2 md:grid-cols-3 gap-4">
       <Input
         placeholder="Search by title..."
         value={filters.title}
         onChange={(e) =>
           onFiltersChange({ ...filters, title: e.target.value })
         }
+        className="w-full"
       />
       <Select
         value={filters.categoryId || "all"}
@@ -38,7 +39,7 @@ export function SearchFiltersComponent({
           })
         }
       >
-        <SelectTrigger>
+        <SelectTrigger className="w-full">
           <SelectValue placeholder="Select category" />
         </SelectTrigger>
         <SelectContent>
@@ -50,12 +51,14 @@ export function SearchFiltersComponent({
           ))}
         </SelectContent>
       </Select>
-      <DatePickerWithRange
-        value={filters.dateRange}
-        onChange={(range) =>
-          onFiltersChange({ ...filters, dateRange: range })
-        }
-      />
+      <div className="w-full">
+        <DatePickerWithRange
+          value={filters.dateRange}
+          onChange={(range) =>
+            onFiltersChange({ ...filters, dateRange: range })
+          }
+        />
+      </div>
     </div>
   );
 }

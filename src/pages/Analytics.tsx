@@ -10,7 +10,6 @@ const Analytics = () => {
   const navigate = useNavigate();
   const { data: userProfile } = useRoleAuthorization();
 
-  // Redirect non-admin users
   useEffect(() => {
     if (userProfile && userProfile.role !== 'admin') {
       navigate('/');
@@ -22,21 +21,17 @@ const Analytics = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight">Analytics Dashboard</h1>
-        <p className="text-muted-foreground mt-2">
+    <div className="container mx-auto p-4 md:p-6 space-y-4 md:space-y-6">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-xl md:text-2xl font-bold tracking-tight">Analytics Dashboard</h1>
+        <p className="text-sm md:text-base text-muted-foreground mt-2">
           Overview of report statistics and metrics
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:gap-6">
         <TotalReports />
-      </div>
-
-      <ReportStatusMetrics />
-
-      <div className="grid gap-6">
+        <ReportStatusMetrics />
         <ReportMetrics />
         <ReportSearch />
       </div>
