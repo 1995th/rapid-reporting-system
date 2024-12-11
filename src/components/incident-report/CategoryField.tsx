@@ -11,12 +11,18 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MainCategoryGroup } from "./MainCategoryGroup";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Button } from "@/components/ui/button";
+import { ChevronDown } from "lucide-react";
+import { useState } from "react";
 
 interface CategoryFieldProps {
   form: UseFormReturn<any>;
 }
 
 export const CategoryField = ({ form }: CategoryFieldProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  
   const { data: categories, isLoading, error } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
@@ -79,6 +85,8 @@ export const CategoryField = ({ form }: CategoryFieldProps) => {
     field.onChange(newValue);
   };
 
+  const selectedCount = form.watch("secondary_categories")?.length || 0;
+
   return (
     <FormField
       control={form.control}
@@ -87,23 +95,38 @@ export const CategoryField = ({ form }: CategoryFieldProps) => {
         <FormItem>
           <FormLabel>Categories</FormLabel>
           <FormControl>
-            <div className="border rounded-lg p-4">
-              <ScrollArea className="h-[400px]">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {categories.mainCategories.map((mainCategory) => (
-                    <MainCategoryGroup
-                      key={mainCategory.id}
-                      mainCategory={mainCategory}
-                      subcategories={categories.subcategories[mainCategory.id] || []}
-                      selectedCategories={field.value || []}
-                      onSubcategoryChange={(subcategoryId, checked) =>
-                        handleSubcategoryChange(field, subcategoryId, checked)
-                      }
-                    />
-                  ))}
+            <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+              <div className="flex items-center justify-between border rounded-lg p-4 mb-2">
+                <p className="text-sm">
+                  {selectedCount} {selectedCount === 1 ? "category" : "categories"} selected
+                </p>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? "transform rotate-180" : ""}`} />
+                    <span className="sr-only">Toggle categories</span>
+                  </Button>
+                </CollapsibleTrigger>
+              </div>
+              <CollapsibleContent>
+                <div className="border rounded-lg p-4">
+                  <ScrollArea className="h-[400px]">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {categories.mainCategories.map((mainCategory) => (
+                        <MainCategoryGroup
+                          key={mainCategory.id}
+                          mainCategory={mainCategory}
+                          subcategories={categories.subcategories[mainCategory.id] || []}
+                          selectedCategories={field.value || []}
+                          onSubcategoryChange={(subcategoryId, checked) =>
+                            handleSubcategoryChange(field, subcategoryId, checked)
+                          }
+                        />
+                      ))}
+                    </div>
+                  </ScrollArea>
                 </div>
-              </ScrollArea>
-            </div>
+              </CollapsibleContent>
+            </Collapsible>
           </FormControl>
           <FormMessage />
         </FormItem>
