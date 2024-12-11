@@ -14,6 +14,7 @@ interface ReportContentProps {
       last_name: string;
     };
     incident_date: string;
+    incident_time: string | null;
     description: string;
   };
 }
@@ -59,6 +60,7 @@ export const ReportContent = ({ report }: ReportContentProps) => {
             status={report.status}
             reporter={report.profiles}
             incidentDate={report.incident_date}
+            incidentTime={report.incident_time}
           />
         </div>
         <div>
