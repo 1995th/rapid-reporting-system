@@ -1,32 +1,69 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { SearchFilters } from "@/components/analytics/types";
 
-export const useReportData = (id?: string) => {
+interface ReportDataResponse {
+  data: any[];
+  count: number;
+}
+
+export const useReportData = (filters: SearchFilters, page: number) => {
+  const ITEMS_PER_PAGE = 10;
+  
   return useQuery({
-    queryKey: ["report", id],
-    queryFn: async () => {
-      if (!id) return null;
-      console.log("Fetching report data for ID:", id);
+    queryKey: ["reports", filters, page],
+    queryFn: async (): Promise<ReportDataResponse> => {
+      console.log("Fetching reports with filters:", filters);
       
-      const { data: reportData, error: reportError } = await supabase
+      let query = supabase
         .from("reports")
-        .select("*, report_category_assignments(subcategory_id)")
-        .eq("id", id)
-        .single();
+        .select(`
+          *,
+          profiles (
+            first_name,
+            last_name
+          ),
+          report_category_assignments (
+            main_categories (
+              id,
+              name
+            ),
+            is_primary
+          )
+        `, { count: 'exact' });
 
-      if (reportError) {
-        console.error("Error fetching report:", reportError);
-        throw reportError;
+      // Apply filters
+      if (filters.title) {
+        query = query.ilike('title', `%${filters.title}%`);
       }
 
-      console.log("Fetched report data:", reportData);
+      if (filters.categoryId) {
+        query = query.eq('main_category_id', filters.categoryId);
+      }
+
+      if (filters.dateRange?.from && filters.dateRange?.to) {
+        query = query
+          .gte('incident_date', filters.dateRange.from.toISOString())
+          .lte('incident_date', filters.dateRange.to.toISOString());
+      }
+
+      // Add pagination
+      const from = (page - 1) * ITEMS_PER_PAGE;
+      const to = from + ITEMS_PER_PAGE - 1;
+      
+      query = query.range(from, to);
+
+      const { data, error, count } = await query;
+
+      if (error) {
+        console.error("Error fetching reports:", error);
+        throw error;
+      }
+
       return {
-        ...reportData,
-        categories: reportData.report_category_assignments.map(
-          (assignment: any) => assignment.subcategory_id
-        ),
+        data: data || [],
+        count: count || 0
       };
     },
-    enabled: !!id,
   });
 };
