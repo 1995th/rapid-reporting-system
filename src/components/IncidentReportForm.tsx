@@ -92,37 +92,18 @@ const IncidentReportForm = () => {
       };
 
       if (id) {
-        // First, delete existing category assignments
-        const { error: deleteError } = await supabase
-          .from("report_category_assignments")
-          .delete()
-          .eq("report_id", id);
+        // Start a transaction using RPC
+        const { data: result, error: rpcError } = await supabase.rpc('update_report_with_categories', {
+          p_report_id: id,
+          p_report_data: reportData,
+          p_categories: data.categories?.map(subcategoryId => ({
+            subcategory_id: subcategoryId,
+            main_category_id: data.main_category_id,
+            is_primary: false,
+          })) || []
+        });
 
-        if (deleteError) throw deleteError;
-
-        // Then update the report
-        const { error: updateError } = await supabase
-          .from("reports")
-          .update(reportData)
-          .eq("id", id);
-
-        if (updateError) throw updateError;
-
-        // Finally, insert new category assignments
-        if (data.categories?.length) {
-          const { error: categoryError } = await supabase
-            .from("report_category_assignments")
-            .insert(
-              data.categories.map(subcategoryId => ({
-                report_id: id,
-                subcategory_id: subcategoryId,
-                main_category_id: data.main_category_id,
-                is_primary: false,
-              }))
-            );
-
-          if (categoryError) throw categoryError;
-        }
+        if (rpcError) throw rpcError;
 
         toast({
           title: "Success",
@@ -161,6 +142,7 @@ const IncidentReportForm = () => {
 
       navigate("/dashboard");
     } catch (error: any) {
+      console.error("Submission error:", error);
       toast({
         title: "Error",
         description: error.message || "An error occurred while submitting the report",
