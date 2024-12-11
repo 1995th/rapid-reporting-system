@@ -23,7 +23,7 @@ export const ReportsTable = ({ reports }: ReportsTableProps) => {
     const primaryAssignment = report.report_category_assignments?.find(
       (assignment) => assignment.is_primary
     );
-    return primaryAssignment?.case_categories.name || "Uncategorized";
+    return primaryAssignment?.main_categories.name || "Uncategorized";
   };
 
   return (

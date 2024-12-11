@@ -30,7 +30,12 @@ const ReportDetail = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      
+      // Transform the data to match the expected format
+      return {
+        ...data,
+        case_categories: data.main_categories
+      };
     },
   });
 

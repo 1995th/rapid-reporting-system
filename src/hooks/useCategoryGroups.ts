@@ -7,14 +7,14 @@ export const useCategoryGroups = () => {
     queryKey: ["category-groups"],
     queryFn: async () => {
       const { data: groups, error: groupsError } = await supabase
-        .from("report_category_groups")
+        .from("main_categories")
         .select("*")
         .order("name");
 
       if (groupsError) throw groupsError;
 
       const { data: categories, error: categoriesError } = await supabase
-        .from("case_categories")
+        .from("subcategories")
         .select("*")
         .order("name");
 
@@ -23,11 +23,11 @@ export const useCategoryGroups = () => {
       return {
         groups: groups as CategoryGroup[],
         categories: categories.reduce((acc, category) => {
-          if (category.group_id) {
-            if (!acc[category.group_id]) {
-              acc[category.group_id] = [];
+          if (category.main_category_id) {
+            if (!acc[category.main_category_id]) {
+              acc[category.main_category_id] = [];
             }
-            acc[category.group_id].push(category);
+            acc[category.main_category_id].push(category);
           }
           return acc;
         }, {} as Record<string, any[]>)
