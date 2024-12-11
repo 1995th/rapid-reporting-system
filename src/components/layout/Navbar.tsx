@@ -1,41 +1,13 @@
 import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, Home, FilePlus, Search, User, LogOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { Link, useLocation } from "react-router-dom";
+import { navItems } from "./NavItems";
+import NavLink from "./NavLink";
+import NavActions from "./NavActions";
+import MobileNav from "./MobileNav";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const navItems = [
-    { path: "/", label: "Dashboard", icon: Home },
-    { path: "/submit-report", label: "New Report", icon: FilePlus },
-    { path: "/analytics", label: "Search Reports", icon: Search },
-    { path: "/profile", label: "Profile", icon: User },
-  ];
-
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      toast({
-        title: "Logged out successfully",
-        duration: 2000,
-      });
-      navigate("/auth");
-    } catch (error) {
-      toast({
-        title: "Error logging out",
-        variant: "destructive",
-        duration: 2000,
-      });
-    }
-  };
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -51,90 +23,24 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex md:items-center md:space-x-4">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={cn(
-                    "inline-flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                    isActive(item.path)
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                  )}
-                >
-                  <Icon className="h-4 w-4 mr-2" />
-                  {item.label}
-                </Link>
-              );
-            })}
-            <div className="flex items-center space-x-2">
-              <ThemeToggle />
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleLogout}
-                className="w-9 px-0"
-              >
-                <LogOut className="h-[1.2rem] w-[1.2rem]" />
-                <span className="sr-only">Log out</span>
-              </Button>
-            </div>
+            {navItems.map((item) => (
+              <NavLink
+                key={item.path}
+                {...item}
+                isActive={isActive(item.path)}
+              />
+            ))}
+            <NavActions />
           </div>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden flex items-center space-x-2">
-            <ThemeToggle />
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleLogout}
-              className="w-9 px-0"
-            >
-              <LogOut className="h-[1.2rem] w-[1.2rem]" />
-              <span className="sr-only">Log out</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsOpen(!isOpen)}
-              aria-label="Toggle menu"
-            >
-              <Menu className="h-6 w-6" />
-            </Button>
-          </div>
+          {/* Mobile Navigation */}
+          <MobileNav
+            isOpen={isOpen}
+            setIsOpen={setIsOpen}
+            isActive={isActive}
+          />
         </div>
       </div>
-
-      {/* Mobile Navigation */}
-      {isOpen && (
-        <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={cn(
-                    "block px-3 py-2 rounded-md text-base font-medium transition-colors",
-                    isActive(item.path)
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                  )}
-                  onClick={() => setIsOpen(false)}
-                >
-                  <div className="flex items-center">
-                    <Icon className="h-5 w-5 mr-3" />
-                    {item.label}
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </nav>
   );
 };
