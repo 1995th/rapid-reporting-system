@@ -33,7 +33,6 @@ export const useIncidentReportSubmission = () => {
         incident_time: values.incident_time || null,
         location: values.location || null,
         user_id: user.id,
-        main_category_id: values.primary_category_id,
       };
 
       // Create or update report
@@ -60,13 +59,6 @@ export const useIncidentReportSubmission = () => {
           .delete()
           .eq("report_id", id);
       }
-
-      // Insert primary category assignment
-      await supabase.from("report_category_assignments").insert({
-        report_id: report.id,
-        main_category_id: values.primary_category_id,
-        is_primary: true,
-      });
 
       // Insert secondary category assignments
       if (values.secondary_categories?.length > 0) {

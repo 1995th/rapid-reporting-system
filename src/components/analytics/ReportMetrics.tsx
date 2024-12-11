@@ -22,7 +22,7 @@ const ReportMetrics = () => {
       const { data, error } = await supabase
         .from('report_category_assignments')
         .select(`
-          case_categories (
+          main_categories (
             name
           )
         `)
@@ -32,7 +32,7 @@ const ReportMetrics = () => {
 
       // Process the data to count reports per category
       const categoryCounts = data.reduce((acc: { [key: string]: number }, assignment) => {
-        const categoryName = assignment.case_categories?.name || 'Uncategorized';
+        const categoryName = assignment.main_categories?.name || 'Uncategorized';
         acc[categoryName] = (acc[categoryName] || 0) + 1;
         return acc;
       }, {});

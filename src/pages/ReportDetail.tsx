@@ -18,7 +18,7 @@ const ReportDetail = () => {
         .from("reports")
         .select(`
           *,
-          case_categories (
+          main_categories (
             name
           ),
           profiles (

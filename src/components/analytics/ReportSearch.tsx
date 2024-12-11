@@ -23,7 +23,7 @@ const ReportSearch = () => {
     queryKey: ["categories"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("case_categories")
+        .from("main_categories")
         .select("id, name");
       if (error) throw error;
       return data;

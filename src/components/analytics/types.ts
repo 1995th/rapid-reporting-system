@@ -7,7 +7,7 @@ export interface SearchFilters {
 }
 
 export interface CategoryAssignment {
-  case_categories: {
+  main_categories: {
     name: string;
   };
   is_primary: boolean;
