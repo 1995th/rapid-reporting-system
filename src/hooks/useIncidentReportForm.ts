@@ -74,7 +74,7 @@ export const useIncidentReportForm = () => {
       const reportData = {
         title: data.title,
         description: data.description,
-        incident_date: data.incident_date.toISOString(),
+        incident_date: data.incident_date.toISOString().split('T')[0], // Convert Date to YYYY-MM-DD format
         incident_time: data.incident_time,
         location: data.location,
         main_category_id: data.main_category_id,
