@@ -51,6 +51,23 @@ const AuthPage = () => {
             }
           }}
           providers={[]}
+          options={{
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            additionalSignUpFields: [
+              {
+                key: 'first_name',
+                label: 'First Name',
+                type: 'text',
+                required: true,
+              },
+              {
+                key: 'last_name',
+                label: 'Last Name',
+                type: 'text',
+                required: true,
+              },
+            ],
+          }}
         />
       </div>
     </div>
