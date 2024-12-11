@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useParams } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { BackButton } from "@/components/layout/BackButton";
@@ -11,15 +13,13 @@ import { DateField } from "./incident-report/DateField";
 import { TimeField } from "./incident-report/TimeField";
 import { CategoryField } from "./incident-report/CategoryField";
 import { FileUploadField } from "./incident-report/FileUploadField";
+import { useIncidentReportSubmission } from "@/hooks/useIncidentReportSubmission";
 import { ReportFormSchema, reportFormSchema } from "@/lib/validations/report";
-import { useReportData } from "@/hooks/useReportData";
-import { useReportSubmission } from "@/hooks/useReportSubmission";
 import { Loader2 } from "lucide-react";
 
 const IncidentReportForm = () => {
   const { id } = useParams();
-  const { submitReport, isSubmitting } = useReportSubmission(id);
-  const { data: report, isLoading } = useReportData(id);
+  const { handleSubmit, isSubmitting } = useIncidentReportSubmission(id);
 
   const form = useForm<ReportFormSchema>({
     resolver: zodResolver(reportFormSchema),
@@ -32,6 +32,39 @@ const IncidentReportForm = () => {
       categories: [],
       files: undefined,
     },
+  });
+
+  const { data: report, isLoading } = useQuery({
+    queryKey: ["report", id],
+    queryFn: async () => {
+      if (!id) return null;
+      
+      console.log("Fetching report data for ID:", id);
+      
+      const { data: reportData, error: reportError } = await supabase
+        .from("reports")
+        .select(`
+          *,
+          report_category_assignments(subcategory_id)
+        `)
+        .eq("id", id)
+        .single();
+
+      if (reportError) {
+        console.error("Error fetching report:", reportError);
+        throw reportError;
+      }
+
+      console.log("Fetched report data:", reportData);
+
+      return {
+        ...reportData,
+        categories: reportData.report_category_assignments?.map(
+          (assignment: any) => assignment.subcategory_id
+        ) || [],
+      };
+    },
+    enabled: !!id,
   });
 
   useEffect(() => {
@@ -72,7 +105,7 @@ const IncidentReportForm = () => {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(submitReport)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <TitleField form={form} />
             <DescriptionField form={form} />
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
