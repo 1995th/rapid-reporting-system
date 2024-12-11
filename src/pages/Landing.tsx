@@ -6,11 +6,7 @@ const Landing = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-background via-background/95 to-muted">
-      {/* Static gradient orbs */}
-      <div className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
-      <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-secondary/20 rounded-full blur-3xl" />
-      
+    <div className="min-h-screen relative overflow-hidden bg-background">
       {/* Main content */}
       <div className="relative z-10 container mx-auto px-4 min-h-screen flex flex-col items-center justify-center">
         {/* Logo and System Name */}
