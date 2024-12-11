@@ -23,7 +23,7 @@ export const useReportData = (filters: SearchFilters, currentPage: number) => {
             first_name,
             last_name
           )
-        `)
+        `, { count: 'exact' })
         .order("created_at", { ascending: false });
 
       // Apply filters
@@ -32,7 +32,7 @@ export const useReportData = (filters: SearchFilters, currentPage: number) => {
       }
 
       if (filters.categoryId) {
-        query = query.eq("main_category_id", filters.categoryId);
+        query = query.eq("report_category_assignments.main_category_id", filters.categoryId);
       }
 
       if (filters.dateRange?.from) {
