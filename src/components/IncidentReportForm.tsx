@@ -90,13 +90,13 @@ const IncidentReportForm = () => {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <CaseReferenceField form={form} />
             <TitleField form={form} />
             <DescriptionField form={form} />
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <DateField form={form} />
               <TimeField form={form} />
             </div>
-            <CaseReferenceField form={form} />
             <CategoryField form={form} />
             <FileUploadField form={form} />
             <Button type="submit" disabled={isSubmitting}>
