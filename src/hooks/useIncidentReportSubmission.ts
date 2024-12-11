@@ -19,13 +19,15 @@ export const useIncidentReportSubmission = () => {
       let uploadedFiles = [];
       if (values.files && values.files.length > 0) {
         for (const file of Array.from(values.files)) {
-          const fileExt = file.name.split('.').pop();
+          // Type assertion to handle File type
+          const uploadFile = file as File;
+          const fileExt = uploadFile.name.split('.').pop();
           const fileName = `${Math.random()}.${fileExt}`;
           const filePath = `${user.id}/${fileName}`;
 
           const { error: uploadError } = await supabase.storage
             .from('evidence')
-            .upload(filePath, file);
+            .upload(filePath, uploadFile);
 
           if (uploadError) throw uploadError;
 
@@ -35,7 +37,7 @@ export const useIncidentReportSubmission = () => {
 
           uploadedFiles.push({
             file_url: publicUrl,
-            file_type: file.type,
+            file_type: uploadFile.type,
             uploaded_by: user.id
           });
         }
