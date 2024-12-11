@@ -18,7 +18,7 @@ const ReportDetail = () => {
         .from("reports")
         .select(`
           *,
-          main_categories (
+          main_categories!reports_main_category_id_fkey (
             name
           ),
           profiles (
