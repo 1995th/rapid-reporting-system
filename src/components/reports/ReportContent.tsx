@@ -54,7 +54,6 @@ export const ReportContent = ({ report }: ReportContentProps) => {
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <h3 className="font-semibold text-sm text-muted-foreground">Categories</h3>
             {isCategoryLoading ? (
               <Skeleton className="h-8 w-32" />
             ) : categoryAssignments?.length ? (
@@ -73,7 +72,7 @@ export const ReportContent = ({ report }: ReportContentProps) => {
                 )}
                 {secondaryCategories?.length > 0 && (
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Additional Categories:</p>
+                    <p className="text-sm font-medium text-muted-foreground">Offences:</p>
                     <ul className="list-disc list-inside space-y-1">
                       {secondaryCategories.map((cat, index) => (
                         <li key={index} className="text-sm">
