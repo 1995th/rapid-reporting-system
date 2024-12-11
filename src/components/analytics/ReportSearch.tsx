@@ -3,8 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SearchFilters } from "./types";
-import { SearchFiltersComponent } from "./SearchFilters";
+import { SearchFilters } from "./SearchFilters";
 import { ReportsTable } from "./ReportsTable";
 import { ReportPagination } from "./ReportPagination";
 import { useReportData } from "@/hooks/useReportData";
@@ -13,7 +12,7 @@ const ITEMS_PER_PAGE = 10;
 
 const ReportSearch = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [filters, setFilters] = useState<SearchFilters>({
+  const [filters, setFilters] = useState({
     title: "",
     categoryId: null,
     dateRange: undefined,
@@ -24,7 +23,8 @@ const ReportSearch = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("main_categories")
-        .select("id, name");
+        .select("id, name")
+        .order('name');
       if (error) throw error;
       return data || [];
     },
@@ -47,7 +47,7 @@ const ReportSearch = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4 md:space-y-6">
-          <SearchFiltersComponent
+          <SearchFilters
             filters={filters}
             categories={categories || []}
             onFiltersChange={setFilters}

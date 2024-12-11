@@ -20,19 +20,23 @@ const ReportMetrics = () => {
     queryKey: ["reportsByCategory"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('report_category_assignments')
+        .from('reports')
         .select(`
-          main_categories (
-            name
+          id,
+          report_category_assignments (
+            main_category_id,
+            main_categories (
+              name
+            )
           )
-        `)
-        .eq('is_primary', true);
+        `);
 
       if (error) throw error;
 
       // Process the data to count reports per category
-      const categoryCounts = data.reduce((acc: { [key: string]: number }, assignment) => {
-        const categoryName = assignment.main_categories?.name || 'Uncategorized';
+      const categoryCounts = data.reduce((acc: { [key: string]: number }, report) => {
+        const primaryAssignment = report.report_category_assignments?.[0];
+        const categoryName = primaryAssignment?.main_categories?.name || 'Uncategorized';
         acc[categoryName] = (acc[categoryName] || 0) + 1;
         return acc;
       }, {});
