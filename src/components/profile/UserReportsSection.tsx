@@ -23,12 +23,10 @@ export const UserReportsSection = ({ userId }: { userId: string }) => {
         .select(`
           *,
           report_category_assignments!report_category_assignments_report_id_fkey (
-            main_category_id,
-            is_primary,
             main_categories (
-              id,
               name
-            )
+            ),
+            is_primary
           ),
           profiles (
             first_name,

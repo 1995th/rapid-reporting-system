@@ -7,12 +7,12 @@ export interface SearchFilters {
 }
 
 export interface CategoryAssignment {
-  main_category_id: string;
   main_categories: {
     id: string;
     name: string;
   };
   is_primary: boolean;
+  main_category_id: string;
 }
 
 export interface Report {
