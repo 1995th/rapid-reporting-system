@@ -1,69 +1,7 @@
-# Welcome to your Lovable project
+# Rapid Reporting System (RRS) For LE
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/86d0ff81-0dc0-46a3-a885-95d8b97acd03
+The Rapid Reporting System (RRS) is an advanced web application designed to revolutionize the way law enforcement agencies manage incident reporting. By leveraging cutting-edge technology, RRS streamlines the reporting process, reducing the time required to file detailed reports from hours to mere minutes.
 
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/86d0ff81-0dc0-46a3-a885-95d8b97acd03) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/86d0ff81-0dc0-46a3-a885-95d8b97acd03) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+This intuitive and mobile-friendly platform allows officers to focus on what matters most—community safety—while ensuring reports are accurate, standardized, and securely stored. With features like dynamic forms, real-time collaboration, automated data entry, and seamless integration with existing law enforcement databases, RRS enhances efficiency, accountability, and data-driven decision-making within police departments.
