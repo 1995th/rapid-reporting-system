@@ -28,7 +28,7 @@ interface SearchFiltersProps {
   }) => void;
 }
 
-export function SearchFiltersComponent({
+export function SearchFilters({
   filters,
   categories,
   onFiltersChange,
