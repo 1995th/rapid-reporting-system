@@ -95,7 +95,7 @@ const IncidentReportForm = () => {
       };
 
       if (id) {
-        // Start a transaction using RPC
+        // Use the RPC function for updating reports with categories
         const { error: rpcError } = await supabase.rpc('update_report_with_categories', {
           p_report_id: id,
           p_report_data: reportData,
@@ -106,7 +106,10 @@ const IncidentReportForm = () => {
           }))
         });
 
-        if (rpcError) throw rpcError;
+        if (rpcError) {
+          console.error("RPC error:", rpcError);
+          throw rpcError;
+        }
 
         toast({
           title: "Success",
