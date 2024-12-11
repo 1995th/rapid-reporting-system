@@ -36,7 +36,7 @@ export const CategoryField = ({ form }: CategoryFieldProps) => {
         render={({ field }) => (
           <FormItem>
             <FormLabel>Primary Category</FormLabel>
-            <Select onValueChange={field.onChange} value={field.value}>
+            <Select onValueChange={field.onChange} value={field.value || ""}>
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Select primary category" />
@@ -65,7 +65,7 @@ export const CategoryField = ({ form }: CategoryFieldProps) => {
       <FormField
         control={form.control}
         name="secondary_categories"
-        render={() => (
+        render={({ field }) => (
           <FormItem>
             <FormLabel>Secondary Categories (Optional)</FormLabel>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border rounded-lg p-4">
@@ -73,36 +73,32 @@ export const CategoryField = ({ form }: CategoryFieldProps) => {
                 <div key={group.id} className="space-y-2">
                   <h4 className="font-medium text-sm">{group.name}</h4>
                   <div className="space-y-1">
-                    {data.categories[group.id]?.map((category) => (
-                      <FormField
-                        key={category.id}
-                        control={form.control}
-                        name="secondary_categories"
-                        render={({ field }) => {
-                          const isSelected = field.value?.includes(category.id);
-                          const isPrimary = form.watch("primary_category_id") === category.id;
-
-                          return (
-                            <div className="flex items-center space-x-2">
-                              <Checkbox
-                                checked={isSelected}
-                                disabled={isPrimary}
-                                onCheckedChange={(checked) => {
-                                  const currentValue = field.value || [];
-                                  const newValue = checked
-                                    ? [...currentValue, category.id]
-                                    : currentValue.filter((id: string) => id !== category.id);
-                                  field.onChange(newValue);
-                                }}
-                              />
-                              <label className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                {category.name}
-                              </label>
-                            </div>
-                          );
-                        }}
-                      />
-                    ))}
+                    {data.categories[group.id]?.map((category) => {
+                      const isPrimary = form.watch("primary_category_id") === category.id;
+                      return (
+                        <div key={category.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            checked={field.value?.includes(category.id)}
+                            disabled={isPrimary}
+                            onCheckedChange={(checked) => {
+                              const currentValue = field.value || [];
+                              const newValue = checked
+                                ? [...currentValue, category.id]
+                                : currentValue.filter((id: string) => id !== category.id);
+                              field.onChange(newValue);
+                            }}
+                          />
+                          <label 
+                            className={`text-sm leading-none peer-disabled:cursor-not-allowed ${
+                              isPrimary ? "text-muted-foreground" : ""
+                            }`}
+                          >
+                            {category.name}
+                            {isPrimary && " (Primary)"}
+                          </label>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               ))}
