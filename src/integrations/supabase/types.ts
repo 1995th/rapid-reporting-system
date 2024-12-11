@@ -159,6 +159,7 @@ export type Database = {
       }
       reports: {
         Row: {
+          case_reference: string | null
           created_at: string
           description: string
           id: string
@@ -172,6 +173,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          case_reference?: string | null
           created_at?: string
           description: string
           id?: string
@@ -185,6 +187,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          case_reference?: string | null
           created_at?: string
           description?: string
           id?: string
