@@ -33,29 +33,20 @@ export const useIncidentReportSubmission = (id?: string) => {
         }));
       }
 
-      const reportPayload = {
-        title: data.title,
-        description: data.description,
-        incident_date: data.incident_date.toISOString(),
-        incident_time: data.incident_time || null,
-        main_category_id: data.main_category_id,
-        case_reference: data.case_reference,
-        user_id: user.id,
-      };
-
-      let savedReport;
-
       if (id) {
         // Update existing report
-        const { data: updatedReport, error: updateError } = await supabase
+        const { error: updateError } = await supabase
           .from("reports")
-          .update(reportPayload)
-          .eq("id", id)
-          .select()
-          .single();
+          .update({
+            title: data.title,
+            description: data.description,
+            incident_date: data.incident_date.toISOString(),
+            incident_time: data.incident_time,
+            main_category_id: data.main_category_id,
+          })
+          .eq("id", id);
 
         if (updateError) throw updateError;
-        savedReport = updatedReport;
 
         // Update category assignments
         if (data.categories?.length) {
@@ -79,16 +70,42 @@ export const useIncidentReportSubmission = (id?: string) => {
 
           if (categoryError) throw categoryError;
         }
+
+        // Insert new evidence if files were uploaded
+        if (evidenceData.length > 0) {
+          const { error: evidenceError } = await supabase
+            .from("evidence")
+            .insert(
+              evidenceData.map(evidence => ({
+                ...evidence,
+                report_id: id,
+                uploaded_by: user.id,
+              }))
+            );
+
+          if (evidenceError) throw evidenceError;
+        }
+
+        toast({
+          title: "Report updated",
+          description: "Your report has been updated successfully.",
+        });
       } else {
         // Create new report
-        const { data: newReport, error: insertError } = await supabase
+        const { data: reportData, error: insertError } = await supabase
           .from("reports")
-          .insert(reportPayload)
+          .insert({
+            title: data.title,
+            description: data.description,
+            incident_date: data.incident_date.toISOString(),
+            incident_time: data.incident_time,
+            main_category_id: data.main_category_id,
+            user_id: user.id,
+          })
           .select()
           .single();
 
         if (insertError) throw insertError;
-        savedReport = newReport;
 
         // Insert category assignments
         if (data.categories?.length) {
@@ -96,7 +113,7 @@ export const useIncidentReportSubmission = (id?: string) => {
             .from("report_category_assignments")
             .insert(
               data.categories.map(subcategoryId => ({
-                report_id: savedReport.id,
+                report_id: reportData.id,
                 subcategory_id: subcategoryId,
                 main_category_id: data.main_category_id,
                 is_primary: false,
@@ -105,29 +122,27 @@ export const useIncidentReportSubmission = (id?: string) => {
 
           if (categoryError) throw categoryError;
         }
+
+        // Insert evidence if files were uploaded
+        if (evidenceData.length > 0) {
+          const { error: evidenceError } = await supabase
+            .from("evidence")
+            .insert(
+              evidenceData.map(evidence => ({
+                ...evidence,
+                report_id: reportData.id,
+                uploaded_by: user.id,
+              }))
+            );
+
+          if (evidenceError) throw evidenceError;
+        }
+
+        toast({
+          title: "Report submitted",
+          description: "Your report has been submitted successfully.",
+        });
       }
-
-      // Insert evidence if files were uploaded
-      if (evidenceData.length > 0) {
-        const { error: evidenceError } = await supabase
-          .from("evidence")
-          .insert(
-            evidenceData.map(evidence => ({
-              ...evidence,
-              report_id: savedReport.id,
-              uploaded_by: user.id,
-            }))
-          );
-
-        if (evidenceError) throw evidenceError;
-      }
-
-      toast({
-        title: id ? "Report updated" : "Report submitted",
-        description: id 
-          ? "Your report has been updated successfully."
-          : "Your report has been submitted successfully.",
-      });
 
       navigate("/dashboard");
     } catch (error) {
