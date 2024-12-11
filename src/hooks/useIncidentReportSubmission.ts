@@ -10,17 +10,18 @@ export const useIncidentReportSubmission = (id?: string) => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleSubmit = async (data: ReportFormSchema) => {
+  const handleSubmit = async (formData: ReportFormSchema) => {
     try {
       setIsSubmitting(true);
+      console.log("Submitting form data:", formData); // Debug log
 
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) throw new Error("No user found");
 
       // Handle file uploads if files are present
       let evidenceData = [];
-      if (data.files?.length) {
-        const files = Array.from(data.files);
+      if (formData.files?.length) {
+        const files = Array.from(formData.files);
         const uploadPromises = files.map(file => 
           uploadFileToStorage(file, user.id)
         );
@@ -33,120 +34,110 @@ export const useIncidentReportSubmission = (id?: string) => {
         }));
       }
 
+      // Prepare report data
+      const reportPayload = {
+        title: formData.title,
+        description: formData.description,
+        incident_date: formData.incident_date.toISOString(),
+        incident_time: formData.incident_time,
+        main_category_id: formData.main_category_id,
+        case_reference: formData.case_reference || null,
+        user_id: user.id,
+      };
+
+      console.log("Report payload:", reportPayload); // Debug log
+
+      let report;
       if (id) {
         // Update existing report
-        const { error: updateError } = await supabase
+        const { data: updatedReport, error: updateError } = await supabase
           .from("reports")
-          .update({
-            title: data.title,
-            description: data.description,
-            incident_date: data.incident_date.toISOString(),
-            incident_time: data.incident_time,
-            main_category_id: data.main_category_id,
-          })
-          .eq("id", id);
+          .update(reportPayload)
+          .eq("id", id)
+          .select()
+          .single();
 
-        if (updateError) throw updateError;
+        if (updateError) {
+          console.error("Error updating report:", updateError);
+          throw updateError;
+        }
+        report = updatedReport;
+      } else {
+        // Create new report
+        const { data: newReport, error: insertError } = await supabase
+          .from("reports")
+          .insert(reportPayload)
+          .select()
+          .single();
 
-        // Update category assignments
-        if (data.categories?.length) {
-          // Delete existing assignments
-          await supabase
+        if (insertError) {
+          console.error("Error creating report:", insertError);
+          throw insertError;
+        }
+        report = newReport;
+      }
+
+      // Handle category assignments
+      if (formData.categories?.length && report) {
+        // Delete existing assignments if updating
+        if (id) {
+          const { error: deleteError } = await supabase
             .from("report_category_assignments")
             .delete()
             .eq("report_id", id);
 
-          // Insert new assignments
-          const { error: categoryError } = await supabase
-            .from("report_category_assignments")
-            .insert(
-              data.categories.map(subcategoryId => ({
-                report_id: id,
-                subcategory_id: subcategoryId,
-                main_category_id: data.main_category_id,
-                is_primary: false,
-              }))
-            );
-
-          if (categoryError) throw categoryError;
+          if (deleteError) {
+            console.error("Error deleting existing categories:", deleteError);
+            throw deleteError;
+          }
         }
 
-        // Insert new evidence if files were uploaded
-        if (evidenceData.length > 0) {
-          const { error: evidenceError } = await supabase
-            .from("evidence")
-            .insert(
-              evidenceData.map(evidence => ({
-                ...evidence,
-                report_id: id,
-                uploaded_by: user.id,
-              }))
-            );
+        // Insert new category assignments
+        const { error: categoryError } = await supabase
+          .from("report_category_assignments")
+          .insert(
+            formData.categories.map(subcategoryId => ({
+              report_id: report.id,
+              subcategory_id: subcategoryId,
+              main_category_id: formData.main_category_id,
+              is_primary: false,
+            }))
+          );
 
-          if (evidenceError) throw evidenceError;
+        if (categoryError) {
+          console.error("Error assigning categories:", categoryError);
+          throw categoryError;
         }
-
-        toast({
-          title: "Report updated",
-          description: "Your report has been updated successfully.",
-        });
-      } else {
-        // Create new report
-        const { data: reportData, error: insertError } = await supabase
-          .from("reports")
-          .insert({
-            title: data.title,
-            description: data.description,
-            incident_date: data.incident_date.toISOString(),
-            incident_time: data.incident_time,
-            main_category_id: data.main_category_id,
-            user_id: user.id,
-          })
-          .select()
-          .single();
-
-        if (insertError) throw insertError;
-
-        // Insert category assignments
-        if (data.categories?.length) {
-          const { error: categoryError } = await supabase
-            .from("report_category_assignments")
-            .insert(
-              data.categories.map(subcategoryId => ({
-                report_id: reportData.id,
-                subcategory_id: subcategoryId,
-                main_category_id: data.main_category_id,
-                is_primary: false,
-              }))
-            );
-
-          if (categoryError) throw categoryError;
-        }
-
-        // Insert evidence if files were uploaded
-        if (evidenceData.length > 0) {
-          const { error: evidenceError } = await supabase
-            .from("evidence")
-            .insert(
-              evidenceData.map(evidence => ({
-                ...evidence,
-                report_id: reportData.id,
-                uploaded_by: user.id,
-              }))
-            );
-
-          if (evidenceError) throw evidenceError;
-        }
-
-        toast({
-          title: "Report submitted",
-          description: "Your report has been submitted successfully.",
-        });
       }
+
+      // Handle evidence uploads
+      if (evidenceData.length > 0 && report) {
+        const { error: evidenceError } = await supabase
+          .from("evidence")
+          .insert(
+            evidenceData.map(evidence => ({
+              ...evidence,
+              report_id: report.id,
+              uploaded_by: user.id,
+            }))
+          );
+
+        if (evidenceError) {
+          console.error("Error uploading evidence:", evidenceError);
+          throw evidenceError;
+        }
+      }
+
+      toast({
+        title: id ? "Report updated" : "Report submitted",
+        description: id 
+          ? "Your report has been updated successfully."
+          : "Your report has been submitted successfully.",
+      });
 
       navigate("/dashboard");
     } catch (error) {
-      console.error("Error submitting report:", error);
+      console.error("Error in form submission:", error);
       toast({
         title: "Error",
         description: "There was an error submitting your report. Please try again.",
