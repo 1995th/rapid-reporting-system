@@ -27,39 +27,42 @@ export const useIncidentReportForm = () => {
     },
   });
 
+  // Fetch existing report data if editing
   useQuery({
     queryKey: ["report", id],
     queryFn: async () => {
       if (!id) return null;
 
-      const { data, error } = await supabase
+      const { data: report, error } = await supabase
         .from("reports")
         .select(`
           *,
           report_category_assignments (
-            subcategory_id
+            subcategory_id,
+            main_category_id
           )
         `)
         .eq("id", id)
         .single();
 
       if (error) throw error;
-      return data;
+      return report;
     },
     enabled: !!id,
     meta: {
       onSettled: (data: any) => {
         if (data) {
+          console.log("Setting form data:", data);
           form.reset({
-            title: data.title,
-            description: data.description,
-            incident_date: new Date(data.incident_date),
+            title: data.title || "",
+            description: data.description || "",
+            incident_date: data.incident_date ? new Date(data.incident_date) : new Date(),
             incident_time: data.incident_time || "",
             location: data.location || "",
             main_category_id: data.main_category_id || "",
-            categories: data.report_category_assignments.map(
+            categories: data.report_category_assignments?.map(
               (assignment: any) => assignment.subcategory_id
-            ),
+            ) || [],
             files: undefined,
           });
         }
