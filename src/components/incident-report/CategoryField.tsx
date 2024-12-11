@@ -17,7 +17,7 @@ interface CategoryFieldProps {
 }
 
 export const CategoryField = ({ form }: CategoryFieldProps) => {
-  const { data: categories, isLoading } = useQuery({
+  const { data: categories, isLoading, error } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
       // Fetch main categories
@@ -61,12 +61,14 @@ export const CategoryField = ({ form }: CategoryFieldProps) => {
     );
   }
 
-  if (!categories?.mainCategories || !categories?.subcategories) {
+  if (error || !categories?.mainCategories || !categories?.subcategories) {
     return (
       <FormItem>
         <FormLabel>Categories</FormLabel>
         <div className="border rounded-lg p-4">
-          <p className="text-sm text-muted-foreground">No categories available</p>
+          <p className="text-sm text-muted-foreground">
+            {error ? "Error loading categories" : "No categories available"}
+          </p>
         </div>
       </FormItem>
     );
@@ -79,40 +81,42 @@ export const CategoryField = ({ form }: CategoryFieldProps) => {
       render={({ field }) => (
         <FormItem>
           <FormLabel>Categories</FormLabel>
-          <div className="border rounded-lg p-4">
-            <ScrollArea className="h-[400px]">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {categories.mainCategories.map((mainCategory) => (
-                  <div key={mainCategory.id} className="space-y-2">
-                    <h4 className="font-medium text-sm">{mainCategory.name}</h4>
-                    <div className="space-y-1">
-                      {categories.subcategories[mainCategory.id]?.map((sub: any) => (
-                        <div key={sub.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`category-${sub.id}`}
-                            checked={field.value?.includes(sub.id)}
-                            onCheckedChange={(checked) => {
-                              const currentValue = field.value || [];
-                              const newValue = checked
-                                ? [...currentValue, sub.id]
-                                : currentValue.filter((id: string) => id !== sub.id);
-                              field.onChange(newValue);
-                            }}
-                          />
-                          <label
-                            htmlFor={`category-${sub.id}`}
-                            className="text-sm leading-none peer-disabled:cursor-not-allowed"
-                          >
-                            {sub.name}
-                          </label>
-                        </div>
-                      ))}
+          <FormControl>
+            <div className="border rounded-lg p-4">
+              <ScrollArea className="h-[400px]">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {categories.mainCategories.map((mainCategory) => (
+                    <div key={mainCategory.id} className="space-y-2">
+                      <h4 className="font-medium text-sm">{mainCategory.name}</h4>
+                      <div className="space-y-1">
+                        {categories.subcategories[mainCategory.id]?.map((sub: any) => (
+                          <div key={sub.id} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`category-${sub.id}`}
+                              checked={field.value?.includes(sub.id)}
+                              onCheckedChange={(checked) => {
+                                const currentValue = field.value || [];
+                                const newValue = checked
+                                  ? [...currentValue, sub.id]
+                                  : currentValue.filter((id: string) => id !== sub.id);
+                                field.onChange(newValue);
+                              }}
+                            />
+                            <label
+                              htmlFor={`category-${sub.id}`}
+                              className="text-sm leading-none peer-disabled:cursor-not-allowed"
+                            >
+                              {sub.name}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+          </FormControl>
           <FormMessage />
         </FormItem>
       )}
