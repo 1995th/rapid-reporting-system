@@ -18,7 +18,7 @@ import { ReportFormSchema, reportFormSchema } from "@/lib/validations/report";
 
 const IncidentReportForm = () => {
   const { id } = useParams();
-  const { handleSubmit, isSubmitting } = useIncidentReportSubmission(id);
+  const { handleSubmit: handleReportSubmit, isSubmitting } = useIncidentReportSubmission(id);
 
   const form = useForm<ReportFormSchema>({
     resolver: zodResolver(reportFormSchema),
@@ -38,7 +38,6 @@ const IncidentReportForm = () => {
     queryFn: async () => {
       if (!id) return null;
       
-      // Fetch report data
       const { data: reportData, error: reportError } = await supabase
         .from("reports")
         .select("*, report_category_assignments(subcategory_id)")
@@ -86,7 +85,7 @@ const IncidentReportForm = () => {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleReportSubmit)} className="space-y-4">
             <TitleField form={form} />
             <DescriptionField form={form} />
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

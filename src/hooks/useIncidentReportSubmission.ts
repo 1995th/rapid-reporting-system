@@ -13,6 +13,7 @@ export const useIncidentReportSubmission = (id?: string) => {
   const handleSubmit = async (data: ReportFormSchema) => {
     try {
       setIsSubmitting(true);
+      console.log("Submitting form data:", data);
 
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) throw new Error("No user found");
@@ -33,17 +34,20 @@ export const useIncidentReportSubmission = (id?: string) => {
         }));
       }
 
+      const reportData = {
+        title: data.title,
+        description: data.description,
+        incident_date: data.incident_date.toISOString().split('T')[0],
+        incident_time: data.incident_time,
+        main_category_id: data.main_category_id,
+        user_id: user.id,
+      };
+
       if (id) {
         // Update existing report
         const { error: updateError } = await supabase
           .from("reports")
-          .update({
-            title: data.title,
-            description: data.description,
-            incident_date: data.incident_date.toISOString(),
-            incident_time: data.incident_time,
-            main_category_id: data.main_category_id,
-          })
+          .update(reportData)
           .eq("id", id);
 
         if (updateError) throw updateError;
@@ -87,21 +91,14 @@ export const useIncidentReportSubmission = (id?: string) => {
         }
 
         toast({
-          title: "Report updated",
-          description: "Your report has been updated successfully.",
+          title: "Success",
+          description: "Report updated successfully",
         });
       } else {
         // Create new report
-        const { data: reportData, error: insertError } = await supabase
+        const { data: reportResult, error: insertError } = await supabase
           .from("reports")
-          .insert({
-            title: data.title,
-            description: data.description,
-            incident_date: data.incident_date.toISOString(),
-            incident_time: data.incident_time,
-            main_category_id: data.main_category_id,
-            user_id: user.id,
-          })
+          .insert(reportData)
           .select()
           .single();
 
@@ -113,7 +110,7 @@ export const useIncidentReportSubmission = (id?: string) => {
             .from("report_category_assignments")
             .insert(
               data.categories.map(subcategoryId => ({
-                report_id: reportData.id,
+                report_id: reportResult.id,
                 subcategory_id: subcategoryId,
                 main_category_id: data.main_category_id,
                 is_primary: false,
@@ -130,7 +127,7 @@ export const useIncidentReportSubmission = (id?: string) => {
             .insert(
               evidenceData.map(evidence => ({
                 ...evidence,
-                report_id: reportData.id,
+                report_id: reportResult.id,
                 uploaded_by: user.id,
               }))
             );
@@ -139,8 +136,8 @@ export const useIncidentReportSubmission = (id?: string) => {
         }
 
         toast({
-          title: "Report submitted",
-          description: "Your report has been submitted successfully.",
+          title: "Success",
+          description: "Report submitted successfully",
         });
       }
 
