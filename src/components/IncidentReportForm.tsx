@@ -10,13 +10,13 @@ import { CategoryField } from "./incident-report/CategoryField";
 import { FileUploadField } from "./incident-report/FileUploadField";
 import { CaseReferenceField } from "./incident-report/CaseReferenceField";
 import { useIncidentReportSubmission } from "@/hooks/useIncidentReportSubmission";
-import { useReportData } from "@/hooks/useReportData";
+import { useSingleReportData } from "@/hooks/useSingleReportData";
 import { useReportForm } from "@/hooks/useReportForm";
 import type { ReportFormSchema } from "@/lib/validations/report";
 
 const IncidentReportForm = () => {
   const { id } = useParams();
-  const { data: report } = useReportData(id);
+  const { data: report } = useSingleReportData(id);
   const form = useReportForm(report);
   const { handleSubmit, isSubmitting } = useIncidentReportSubmission(id);
 

@@ -24,7 +24,9 @@ export const useReportForm = (reportData: any) => {
       form.reset({
         title: reportData.title,
         description: reportData.description,
-        incident_date: new Date(reportData.incident_date),
+        incident_date: reportData.incident_date instanceof Date 
+          ? reportData.incident_date 
+          : new Date(reportData.incident_date || new Date()),
         incident_time: reportData.incident_time,
         main_category_id: reportData.main_category_id,
         categories: reportData.categories,
