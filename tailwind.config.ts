@@ -95,26 +95,5 @@ export default {
       }
     }
   },
-  plugins: [
-    require("tailwindcss-animate"),
-    function({ addComponents }) {
-      addComponents({
-        '.glass-morphism': {
-          backgroundColor: 'rgba(255, 255, 255, 0.05)',
-          backdropFilter: 'blur(8px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          boxShadow: '0 4px 12px -2px rgba(0, 0, 0, 0.12)',
-        },
-        '.glass-button': {
-          backgroundColor: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(8px)',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          '&:hover': {
-            backgroundColor: 'rgba(255, 255, 255, 0.15)',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-          },
-        },
-      });
-    },
-  ],
+  plugins: [require("tailwindcss-animate")],
 } satisfies Config;

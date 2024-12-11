@@ -4,7 +4,6 @@ import { navItems } from "./NavItems";
 import NavLink from "./NavLink";
 import NavActions from "./NavActions";
 import MobileNav from "./MobileNav";
-import { Siren } from "lucide-react";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,12 +16,8 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Link to="/dashboard" className="flex-shrink-0 flex items-center gap-2">
-              <div className="relative">
-                <div className="absolute inset-0 bg-primary/10 rounded-full" />
-                <Siren className="h-6 w-6 text-primary relative z-10" />
-              </div>
-              <span className="text-xl font-bold">Rapid Reporting System</span>
+            <Link to="/" className="flex-shrink-0 flex items-center">
+              <span className="text-xl font-bold">SecureReport</span>
             </Link>
           </div>
 

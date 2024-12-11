@@ -52,7 +52,7 @@ export const SignInForm = ({ onToggle }: { onToggle: () => void }) => {
         title: "Welcome back!",
         description: "You have successfully signed in.",
       });
-      navigate("/dashboard");
+      navigate("/");
     } catch (error) {
       toast({
         title: "Error",

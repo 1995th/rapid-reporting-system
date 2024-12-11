@@ -296,14 +296,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      update_report_with_categories: {
-        Args: {
-          p_report_id: string
-          p_report_data: Json
-          p_categories: Json[]
-        }
-        Returns: undefined
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
