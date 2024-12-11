@@ -1,9 +1,8 @@
-import { format } from "date-fns";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Skeleton } from "@/components/ui/skeleton";
+import { CategoryDisplay } from "./CategoryDisplay";
+import { ReportMetadata } from "./ReportMetadata";
 
 interface ReportContentProps {
   report: {
@@ -43,9 +42,6 @@ export const ReportContent = ({ report }: ReportContentProps) => {
     },
   });
 
-  const primaryCategory = categoryAssignments?.find(cat => cat.is_primary);
-  const secondaryCategories = categoryAssignments?.filter(cat => !cat.is_primary);
-
   return (
     <Card>
       <CardHeader>
@@ -54,68 +50,16 @@ export const ReportContent = ({ report }: ReportContentProps) => {
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            {isCategoryLoading ? (
-              <Skeleton className="h-8 w-32" />
-            ) : categoryAssignments?.length ? (
-              <div className="space-y-4">
-                {primaryCategory && (
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Primary Category:</p>
-                    <p className="text-sm">{primaryCategory.main_categories?.name}</p>
-                    {primaryCategory.subcategories && (
-                      <>
-                        <p className="text-sm font-medium text-muted-foreground mt-1">Subcategory:</p>
-                        <p className="text-sm">{primaryCategory.subcategories.name}</p>
-                      </>
-                    )}
-                  </div>
-                )}
-                {secondaryCategories?.length > 0 && (
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Offences:</p>
-                    <ul className="list-disc list-inside space-y-1">
-                      {secondaryCategories.map((cat, index) => (
-                        <li key={index} className="text-sm">
-                          {cat.main_categories?.name}
-                          {cat.subcategories && ` - ${cat.subcategories.name}`}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No categories assigned</p>
-            )}
+            <CategoryDisplay 
+              categoryAssignments={categoryAssignments} 
+              isLoading={isCategoryLoading} 
+            />
           </div>
-          <div>
-            <h3 className="font-semibold text-sm text-muted-foreground">Status</h3>
-            <Badge
-              variant={
-                report.status === "resolved"
-                  ? "success"
-                  : report.status === "in_progress"
-                  ? "warning"
-                  : "default"
-              }
-            >
-              {report.status}
-            </Badge>
-          </div>
-          <div>
-            <h3 className="font-semibold text-sm text-muted-foreground">Reporter</h3>
-            <p>
-              {report.profiles?.first_name} {report.profiles?.last_name}
-            </p>
-          </div>
-          <div>
-            <h3 className="font-semibold text-sm text-muted-foreground">Date</h3>
-            <p>
-              {report.incident_date
-                ? format(new Date(report.incident_date), "MMM d, yyyy")
-                : "N/A"}
-            </p>
-          </div>
+          <ReportMetadata
+            status={report.status}
+            reporter={report.profiles}
+            incidentDate={report.incident_date}
+          />
         </div>
         <div>
           <h3 className="font-semibold text-sm text-muted-foreground mb-2">Description</h3>
