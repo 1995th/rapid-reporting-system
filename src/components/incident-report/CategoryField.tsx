@@ -9,12 +9,17 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MainCategoryGroup } from "./MainCategoryGroup";
 import { UseFormReturn } from "react-hook-form";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown } from "lucide-react";
+import { useState } from "react";
 
 interface CategoryFieldProps {
   form: UseFormReturn<any>;
 }
 
 export const CategoryField = ({ form }: CategoryFieldProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+
   const { data: categoryData } = useQuery({
     queryKey: ["categories-with-subcategories"],
     queryFn: async () => {
@@ -65,17 +70,29 @@ export const CategoryField = ({ form }: CategoryFieldProps) => {
         <FormItem>
           <FormLabel>Categories</FormLabel>
           <FormControl>
-            <div className="space-y-4">
-              {categoryData.mainCategories.map((mainCategory) => (
-                <MainCategoryGroup
-                  key={mainCategory.id}
-                  mainCategory={mainCategory}
-                  subcategories={categoryData.subcategories[mainCategory.id] || []}
-                  selectedCategories={selectedCategories}
-                  onSubcategoryChange={handleSubcategoryChange}
+            <Collapsible open={isOpen} onOpenChange={setIsOpen} className="space-y-2">
+              <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border p-4 font-medium hover:bg-muted">
+                Select Categories
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform duration-200 ${
+                    isOpen ? "rotate-180" : ""
+                  }`}
                 />
-              ))}
-            </div>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-4">
+                <div className="rounded-lg border p-4">
+                  {categoryData.mainCategories.map((mainCategory) => (
+                    <MainCategoryGroup
+                      key={mainCategory.id}
+                      mainCategory={mainCategory}
+                      subcategories={categoryData.subcategories[mainCategory.id] || []}
+                      selectedCategories={selectedCategories}
+                      onSubcategoryChange={handleSubcategoryChange}
+                    />
+                  ))}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
           </FormControl>
           <FormMessage />
         </FormItem>
