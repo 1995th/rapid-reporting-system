@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./use-toast";
+import { uploadFileToStorage } from "@/utils/fileUpload";
+import { createReport, updateReport, saveEvidence } from "@/services/reportService";
 
 export const useIncidentReportSubmission = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,27 +21,8 @@ export const useIncidentReportSubmission = () => {
       let uploadedFiles = [];
       if (values.files && values.files.length > 0) {
         for (const file of Array.from(values.files)) {
-          // Type assertion to handle File type
-          const uploadFile = file as File;
-          const fileExt = uploadFile.name.split('.').pop();
-          const fileName = `${Math.random()}.${fileExt}`;
-          const filePath = `${user.id}/${fileName}`;
-
-          const { error: uploadError } = await supabase.storage
-            .from('evidence')
-            .upload(filePath, uploadFile);
-
-          if (uploadError) throw uploadError;
-
-          const { data: { publicUrl } } = supabase.storage
-            .from('evidence')
-            .getPublicUrl(filePath);
-
-          uploadedFiles.push({
-            file_url: publicUrl,
-            file_type: uploadFile.type,
-            uploaded_by: user.id
-          });
+          const uploadedFile = await uploadFileToStorage(file as File, user.id);
+          uploadedFiles.push(uploadedFile);
         }
       }
 
@@ -54,40 +37,10 @@ export const useIncidentReportSubmission = () => {
         user_id: user.id,
       };
 
-      let reportResult;
-      
-      if (id) {
-        // Update existing report
-        const { data, error } = await supabase
-          .from('reports')
-          .update(reportData)
-          .eq('id', id)
-          .select()
-          .single();
-
-        if (error) throw error;
-        reportResult = data;
-        
-        toast({
-          title: "Success",
-          description: "Report updated successfully",
-        });
-      } else {
-        // Create new report
-        const { data, error } = await supabase
-          .from('reports')
-          .insert(reportData)
-          .select()
-          .single();
-
-        if (error) throw error;
-        reportResult = data;
-        
-        toast({
-          title: "Success",
-          description: "Report submitted successfully",
-        });
-      }
+      // Create or update report
+      const reportResult = id 
+        ? await updateReport(id, reportData)
+        : await createReport(reportData);
 
       // Handle evidence uploads if there are any files
       if (uploadedFiles.length > 0) {
@@ -95,13 +48,13 @@ export const useIncidentReportSubmission = () => {
           ...file,
           report_id: reportResult.id
         }));
-
-        const { error: evidenceError } = await supabase
-          .from('evidence')
-          .insert(evidenceData);
-
-        if (evidenceError) throw evidenceError;
+        await saveEvidence(evidenceData);
       }
+
+      toast({
+        title: "Success",
+        description: id ? "Report updated successfully" : "Report submitted successfully",
+      });
 
       navigate('/');
     } catch (error: any) {
