@@ -20,14 +20,14 @@ export const FileUploadField = ({ form }: FileUploadFieldProps) => {
     if (!currentFiles) return;
 
     const dt = new DataTransfer();
-    Array.from(currentFiles)
+    Array.from(currentFiles as FileList)
       .filter((_, index) => index !== indexToDelete)
       .forEach(file => dt.items.add(file));
 
     form.setValue("files", dt.files);
   };
 
-  const files = form.watch("files");
+  const files = form.watch("files") as FileList | undefined;
 
   return (
     <FormField

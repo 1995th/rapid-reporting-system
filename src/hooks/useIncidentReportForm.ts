@@ -27,7 +27,7 @@ export const useIncidentReportForm = () => {
     },
   });
 
-  const { data: report } = useQuery({
+  useQuery({
     queryKey: ["report", id],
     queryFn: async () => {
       if (!id) return null;
@@ -47,21 +47,23 @@ export const useIncidentReportForm = () => {
       return data;
     },
     enabled: !!id,
-    onSettled: (data) => {
-      if (data) {
-        form.reset({
-          title: data.title,
-          description: data.description,
-          incident_date: new Date(data.incident_date),
-          incident_time: data.incident_time || "",
-          location: data.location || "",
-          main_category_id: data.main_category_id || "",
-          categories: data.report_category_assignments.map(
-            (assignment) => assignment.subcategory_id
-          ),
-          files: undefined,
-        });
-      }
+    meta: {
+      onSettled: (data: any) => {
+        if (data) {
+          form.reset({
+            title: data.title,
+            description: data.description,
+            incident_date: new Date(data.incident_date),
+            incident_time: data.incident_time || "",
+            location: data.location || "",
+            main_category_id: data.main_category_id || "",
+            categories: data.report_category_assignments.map(
+              (assignment: any) => assignment.subcategory_id
+            ),
+            files: undefined,
+          });
+        }
+      },
     },
   });
 
