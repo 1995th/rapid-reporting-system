@@ -1,5 +1,6 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/layout/Navbar";
+import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import AuthPage from "./pages/Auth";
 import Analytics from "./pages/Analytics";
@@ -10,16 +11,17 @@ import ReportDetail from "./pages/ReportDetail";
 
 const AppRoutes = () => {
   const location = useLocation();
-  const isAuthPage = location.pathname === '/auth';
+  const isPublicPage = location.pathname === '/auth' || location.pathname === '/';
 
   return (
     <>
-      {!isAuthPage && <Navbar />}
-      <main className={`container mx-auto px-4 ${isAuthPage ? '' : 'py-6'}`}>
+      {!isPublicPage && <Navbar />}
+      <main className={`${isPublicPage ? '' : 'container mx-auto px-4 py-6'}`}>
         <Routes>
+          <Route path="/" element={<Landing />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route
-            path="/"
+            path="/dashboard"
             element={
               <ProtectedRoute>
                 <Index />
