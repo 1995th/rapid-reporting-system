@@ -24,7 +24,13 @@ export const useIncidentReportSubmission = (id?: string) => {
         const uploadPromises = files.map(file => 
           uploadFileToStorage(file, user.id)
         );
-        evidenceData = await Promise.all(uploadPromises);
+        
+        const uploadedFiles = await Promise.all(uploadPromises);
+        evidenceData = uploadedFiles.map(file => ({
+          file_url: file.file_url,
+          file_type: file.file_type,
+          description: `Uploaded file: ${file.file_name}`
+        }));
       }
 
       if (id) {
@@ -138,7 +144,7 @@ export const useIncidentReportSubmission = (id?: string) => {
         });
       }
 
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       console.error("Error submitting report:", error);
       toast({
