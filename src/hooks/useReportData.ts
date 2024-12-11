@@ -14,7 +14,7 @@ export const useReportData = (filters: SearchFilters, currentPage: number) => {
         .select(`
           *,
           report_category_assignments!report_category_assignments_report_id_fkey (
-            case_categories (
+            main_categories (
               name
             ),
             is_primary
@@ -32,7 +32,7 @@ export const useReportData = (filters: SearchFilters, currentPage: number) => {
       }
 
       if (filters.categoryId) {
-        query = query.eq("category_id", filters.categoryId);
+        query = query.eq("main_category_id", filters.categoryId);
       }
 
       if (filters.dateRange?.from) {
