@@ -38,34 +38,6 @@ export const BasicFields = ({ form }: BasicFieldsProps) => {
 
       <FormField
         control={form.control}
-        name="incident_date"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Incident Date</FormLabel>
-            <FormControl>
-              <Input type="date" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name="incident_time"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Incident Time</FormLabel>
-            <FormControl>
-              <Input type="time" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
         name="location"
         render={({ field }) => (
           <FormItem>
