@@ -13,8 +13,9 @@ export const useIncidentReportSubmission = (id?: string) => {
   const handleSubmit = async (data: ReportFormSchema) => {
     try {
       setIsSubmitting(true);
+      console.log("Submitting form data:", data);
 
-      const user = (await supabase.auth.getUser()).data.user;
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("No user found");
 
       // Handle file uploads if files are present
@@ -28,6 +29,7 @@ export const useIncidentReportSubmission = (id?: string) => {
       }
 
       if (id) {
+        console.log("Updating existing report:", id);
         // Update existing report
         const { error: updateError } = await supabase
           .from("reports")
@@ -37,6 +39,7 @@ export const useIncidentReportSubmission = (id?: string) => {
             incident_date: data.incident_date.toISOString(),
             incident_time: data.incident_time,
             main_category_id: data.main_category_id,
+            updated_at: new Date().toISOString(),
           })
           .eq("id", id);
 
@@ -85,6 +88,7 @@ export const useIncidentReportSubmission = (id?: string) => {
           description: "Your report has been updated successfully.",
         });
       } else {
+        console.log("Creating new report");
         // Create new report
         const { data: reportData, error: insertError } = await supabase
           .from("reports")
@@ -138,7 +142,7 @@ export const useIncidentReportSubmission = (id?: string) => {
         });
       }
 
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       console.error("Error submitting report:", error);
       toast({

@@ -15,6 +15,7 @@ import { CategoryField } from "./incident-report/CategoryField";
 import { FileUploadField } from "./incident-report/FileUploadField";
 import { useIncidentReportSubmission } from "@/hooks/useIncidentReportSubmission";
 import { ReportFormSchema, reportFormSchema } from "@/lib/validations/report";
+import { Loader2 } from "lucide-react";
 
 const IncidentReportForm = () => {
   const { id } = useParams();
@@ -33,25 +34,34 @@ const IncidentReportForm = () => {
     },
   });
 
-  const { data: report } = useQuery({
+  const { data: report, isLoading } = useQuery({
     queryKey: ["report", id],
     queryFn: async () => {
       if (!id) return null;
       
-      // Fetch report data
+      console.log("Fetching report data for ID:", id);
+      
       const { data: reportData, error: reportError } = await supabase
         .from("reports")
-        .select("*, report_category_assignments(subcategory_id)")
+        .select(`
+          *,
+          report_category_assignments(subcategory_id)
+        `)
         .eq("id", id)
         .single();
 
-      if (reportError) throw reportError;
+      if (reportError) {
+        console.error("Error fetching report:", reportError);
+        throw reportError;
+      }
+
+      console.log("Fetched report data:", reportData);
 
       return {
         ...reportData,
-        categories: reportData.report_category_assignments.map(
+        categories: reportData.report_category_assignments?.map(
           (assignment: any) => assignment.subcategory_id
-        ),
+        ) || [],
       };
     },
     enabled: !!id,
@@ -59,16 +69,25 @@ const IncidentReportForm = () => {
 
   useEffect(() => {
     if (report) {
+      console.log("Setting form values with report:", report);
       form.reset({
         title: report.title,
         description: report.description,
         incident_date: new Date(report.incident_date),
-        incident_time: report.incident_time,
-        main_category_id: report.main_category_id,
-        categories: report.categories,
+        incident_time: report.incident_time || "",
+        main_category_id: report.main_category_id || "",
+        categories: report.categories || [],
       });
     }
   }, [report, form]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
