@@ -14,12 +14,14 @@ import { TimeField } from "./incident-report/TimeField";
 import { CategoryField } from "./incident-report/CategoryField";
 import { FileUploadField } from "./incident-report/FileUploadField";
 import { ReportFormSchema, reportFormSchema } from "@/lib/validations/report";
-import { useReportSubmission } from "@/hooks/useReportSubmission";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 const IncidentReportForm = () => {
   const { id } = useParams();
-  const { handleSubmit, isSubmitting } = useReportSubmission(id);
-
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
   const form = useForm<ReportFormSchema>({
     resolver: zodResolver(reportFormSchema),
     defaultValues: {
@@ -36,7 +38,6 @@ const IncidentReportForm = () => {
   const { data: report } = useQuery({
     queryKey: ["report", id],
     queryFn: async () => {
-      console.log("Fetching report data for ID:", id);
       if (!id) return null;
       
       const { data: reportData, error: reportError } = await supabase
@@ -45,12 +46,8 @@ const IncidentReportForm = () => {
         .eq("id", id)
         .single();
 
-      if (reportError) {
-        console.error("Error fetching report:", reportError);
-        throw reportError;
-      }
+      if (reportError) throw reportError;
 
-      console.log("Fetched report data:", reportData);
       return {
         ...reportData,
         categories: reportData.report_category_assignments.map(
@@ -63,7 +60,6 @@ const IncidentReportForm = () => {
 
   useEffect(() => {
     if (report) {
-      console.log("Resetting form with report data:", report);
       form.reset({
         title: report.title,
         description: report.description,
@@ -75,10 +71,95 @@ const IncidentReportForm = () => {
     }
   }, [report, form]);
 
-  const onFormSubmit = form.handleSubmit(async (data) => {
-    console.log("Form submitted with data:", data);
-    await handleSubmit(data);
-  });
+  const onSubmit = async (data: ReportFormSchema) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to submit a report",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const reportData = {
+        title: data.title,
+        description: data.description,
+        incident_date: data.incident_date.toISOString().split('T')[0],
+        incident_time: data.incident_time,
+        main_category_id: data.main_category_id,
+        user_id: user.id,
+      };
+
+      if (id) {
+        const { error: updateError } = await supabase
+          .from("reports")
+          .update(reportData)
+          .eq("id", id);
+
+        if (updateError) throw updateError;
+
+        // Delete existing category assignments
+        await supabase
+          .from("report_category_assignments")
+          .delete()
+          .eq("report_id", id);
+
+        // Insert new category assignments
+        if (data.categories?.length) {
+          const { error: categoryError } = await supabase
+            .from("report_category_assignments")
+            .insert(
+              data.categories.map(subcategoryId => ({
+                report_id: id,
+                subcategory_id: subcategoryId,
+                main_category_id: data.main_category_id,
+                is_primary: false,
+              }))
+            );
+
+          if (categoryError) throw categoryError;
+        }
+      } else {
+        const { data: newReport, error: insertError } = await supabase
+          .from("reports")
+          .insert(reportData)
+          .select()
+          .single();
+
+        if (insertError) throw insertError;
+
+        if (data.categories?.length) {
+          const { error: categoryError } = await supabase
+            .from("report_category_assignments")
+            .insert(
+              data.categories.map(subcategoryId => ({
+                report_id: newReport.id,
+                subcategory_id: subcategoryId,
+                main_category_id: data.main_category_id,
+                is_primary: false,
+              }))
+            );
+
+          if (categoryError) throw categoryError;
+        }
+      }
+
+      toast({
+        title: "Success",
+        description: id ? "Report updated successfully" : "Report submitted successfully",
+      });
+
+      navigate("/dashboard");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "An error occurred while submitting the report",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -96,7 +177,7 @@ const IncidentReportForm = () => {
         </div>
 
         <Form {...form}>
-          <form onSubmit={onFormSubmit} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <TitleField form={form} />
             <DescriptionField form={form} />
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -105,8 +186,8 @@ const IncidentReportForm = () => {
             </div>
             <CategoryField form={form} />
             <FileUploadField form={form} />
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Submitting..." : (id ? "Update Report" : "Submit Report")}
+            <Button type="submit" disabled={form.formState.isSubmitting}>
+              {form.formState.isSubmitting ? "Submitting..." : (id ? "Update Report" : "Submit Report")}
             </Button>
           </form>
         </Form>
