@@ -17,8 +17,7 @@ import { useEffect } from "react";
 const formSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title is too long"),
   description: z.string().min(1, "Description is required"),
-  primary_category_id: z.string().uuid("Please select a primary category"),
-  secondary_categories: z.array(z.string().uuid()).optional().default([]),
+  secondary_categories: z.array(z.string().uuid()).min(1, "Please select at least one category"),
   incident_date: z.string().optional(),
   incident_time: z.string().optional(),
   location: z.string().optional(),
@@ -42,28 +41,19 @@ const IncidentReportForm = () => {
         .select(`
           *,
           report_category_assignments (
-            main_category_id,
-            subcategory_id,
-            is_primary
+            subcategory_id
           )
         `)
         .eq("id", id)
         .single();
       
       if (reportError) throw reportError;
-      
-      const primaryCategory = report.report_category_assignments.find(
-        (assignment: any) => assignment.is_primary
-      );
-      
-      const secondaryCategories = report.report_category_assignments
-        .filter((assignment: any) => !assignment.is_primary)
-        .map((assignment: any) => assignment.subcategory_id);
 
       return {
         ...report,
-        primary_category_id: primaryCategory?.main_category_id,
-        secondary_categories: secondaryCategories,
+        secondary_categories: report.report_category_assignments.map(
+          (assignment: any) => assignment.subcategory_id
+        ),
       };
     },
     enabled: !!id,
@@ -74,7 +64,6 @@ const IncidentReportForm = () => {
     defaultValues: {
       title: "",
       description: "",
-      primary_category_id: "",
       secondary_categories: [],
       incident_date: "",
       incident_time: "",
@@ -89,7 +78,6 @@ const IncidentReportForm = () => {
       form.reset({
         title: existingReport.title,
         description: existingReport.description,
-        primary_category_id: existingReport.primary_category_id || "",
         secondary_categories: existingReport.secondary_categories || [],
         incident_date: existingReport.incident_date || "",
         incident_time: existingReport.incident_time || "",

@@ -5,15 +5,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { UseFormReturn } from "react-hook-form";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -61,53 +52,24 @@ export const CategoryField = ({ form }: CategoryFieldProps) => {
   if (isLoading || !categories) return null;
 
   return (
-    <div className="space-y-4">
-      <FormField
-        control={form.control}
-        name="primary_category_id"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Primary Category</FormLabel>
-            <Select onValueChange={field.onChange} value={field.value}>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select primary category" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                <ScrollArea className="h-80">
-                  {categories.mainCategories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </ScrollArea>
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name="secondary_categories"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Secondary Categories (Optional)</FormLabel>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border rounded-lg p-4">
-              {categories.mainCategories.map((mainCategory) => (
-                <div key={mainCategory.id} className="space-y-2">
-                  <h4 className="font-medium text-sm">{mainCategory.name}</h4>
-                  <div className="space-y-1">
-                    {categories.subcategories[mainCategory.id]?.map((sub: any) => {
-                      const isPrimary = form.watch("primary_category_id") === mainCategory.id;
-                      return (
+    <FormField
+      control={form.control}
+      name="secondary_categories"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Categories</FormLabel>
+          <div className="border rounded-lg p-4">
+            <ScrollArea className="h-[400px]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {categories.mainCategories.map((mainCategory) => (
+                  <div key={mainCategory.id} className="space-y-2">
+                    <h4 className="font-medium text-sm">{mainCategory.name}</h4>
+                    <div className="space-y-1">
+                      {categories.subcategories[mainCategory.id]?.map((sub: any) => (
                         <div key={sub.id} className="flex items-center space-x-2">
                           <Checkbox
-                            id={`secondary-${sub.id}`}
+                            id={`category-${sub.id}`}
                             checked={field.value?.includes(sub.id)}
-                            disabled={isPrimary}
                             onCheckedChange={(checked) => {
                               const currentValue = field.value || [];
                               const newValue = checked
@@ -117,25 +79,22 @@ export const CategoryField = ({ form }: CategoryFieldProps) => {
                             }}
                           />
                           <label
-                            htmlFor={`secondary-${sub.id}`}
-                            className={`text-sm leading-none peer-disabled:cursor-not-allowed ${
-                              isPrimary ? "text-muted-foreground" : ""
-                            }`}
+                            htmlFor={`category-${sub.id}`}
+                            className="text-sm leading-none peer-disabled:cursor-not-allowed"
                           >
                             {sub.name}
-                            {isPrimary && " (Primary)"}
                           </label>
                         </div>
-                      );
-                    })}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-    </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
   );
 };
