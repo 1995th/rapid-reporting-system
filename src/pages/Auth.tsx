@@ -51,22 +51,25 @@ const AuthPage = () => {
             }
           }}
           providers={[]}
-          options={{
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
-            additionalSignUpFields: [
-              {
-                key: 'first_name',
-                label: 'First Name',
-                type: 'text',
-                required: true,
+          localization={{
+            variables: {
+              sign_up: {
+                email_label: "Email",
+                password_label: "Password",
+                email_input_placeholder: "Your email",
+                password_input_placeholder: "Your password",
+                button_label: "Sign up",
+                loading_button_label: "Signing up ...",
+                social_provider_text: "Sign in with {{provider}}",
+                link_text: "Don't have an account? Sign up",
+                confirmation_text: "Check your email for the confirmation link",
               },
-              {
-                key: 'last_name',
-                label: 'Last Name',
-                type: 'text',
-                required: true,
-              },
-            ],
+            },
+          }}
+          redirectTo={`${window.location.origin}/auth/callback`}
+          additionalData={{
+            first_name: '',
+            last_name: '',
           }}
         />
       </div>
