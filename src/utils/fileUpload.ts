@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 export interface UploadedFile {
   file_url: string;
   file_type: string;
-  uploaded_by: string;
+  file_name: string;
+  description?: string;
 }
 
 export const uploadFileToStorage = async (
@@ -27,6 +28,7 @@ export const uploadFileToStorage = async (
   return {
     file_url: publicUrl,
     file_type: file.type,
-    uploaded_by: userId
+    file_name: file.name,
+    description: `Uploaded file: ${file.name}`
   };
 };
