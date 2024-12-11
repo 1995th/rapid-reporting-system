@@ -36,6 +36,7 @@ const IncidentReportForm = () => {
   const { data: report } = useQuery({
     queryKey: ["report", id],
     queryFn: async () => {
+      console.log("Fetching report data for ID:", id);
       if (!id) return null;
       
       const { data: reportData, error: reportError } = await supabase
@@ -44,8 +45,12 @@ const IncidentReportForm = () => {
         .eq("id", id)
         .single();
 
-      if (reportError) throw reportError;
+      if (reportError) {
+        console.error("Error fetching report:", reportError);
+        throw reportError;
+      }
 
+      console.log("Fetched report data:", reportData);
       return {
         ...reportData,
         categories: reportData.report_category_assignments.map(
@@ -58,6 +63,7 @@ const IncidentReportForm = () => {
 
   useEffect(() => {
     if (report) {
+      console.log("Resetting form with report data:", report);
       form.reset({
         title: report.title,
         description: report.description,
@@ -68,6 +74,11 @@ const IncidentReportForm = () => {
       });
     }
   }, [report, form]);
+
+  const onFormSubmit = form.handleSubmit(async (data) => {
+    console.log("Form submitted with data:", data);
+    await handleSubmit(data);
+  });
 
   return (
     <div className="space-y-4">
@@ -85,7 +96,7 @@ const IncidentReportForm = () => {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form onSubmit={onFormSubmit} className="space-y-4">
             <TitleField form={form} />
             <DescriptionField form={form} />
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -95,7 +106,7 @@ const IncidentReportForm = () => {
             <CategoryField form={form} />
             <FileUploadField form={form} />
             <Button type="submit" disabled={isSubmitting}>
-              {id ? "Update Report" : "Submit Report"}
+              {isSubmitting ? "Submitting..." : (id ? "Update Report" : "Submit Report")}
             </Button>
           </form>
         </Form>
