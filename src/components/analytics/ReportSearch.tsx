@@ -19,24 +19,24 @@ const ReportSearch = () => {
     dateRange: undefined,
   });
 
-  const { data: categories } = useQuery({
+  const { data: categories, isLoading: isCategoriesLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("main_categories")
         .select("id, name");
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 
-  const { data: reportData, isLoading } = useReportData(filters, currentPage);
+  const { data: reportData, isLoading: isReportsLoading } = useReportData(filters, currentPage);
 
   const totalPages = reportData?.count
     ? Math.ceil(reportData.count / ITEMS_PER_PAGE)
     : 0;
 
-  if (isLoading) {
+  if (isReportsLoading || isCategoriesLoading) {
     return <Skeleton className="w-full h-[400px]" role="progressbar" aria-label="Loading reports" />;
   }
 

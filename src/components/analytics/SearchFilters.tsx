@@ -9,13 +9,18 @@ import {
 import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 import { DateRange } from "react-day-picker";
 
+interface Category {
+  id: string;
+  name: string;
+}
+
 interface SearchFiltersProps {
   filters: {
     title: string;
     categoryId: string | null;
     dateRange: DateRange | undefined;
   };
-  categories: Array<{ id: string; name: string }>;
+  categories: Category[];
   onFiltersChange: (filters: {
     title: string;
     categoryId: string | null;
@@ -57,7 +62,7 @@ export function SearchFiltersComponent({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Categories</SelectItem>
-          {categories?.map((category) => (
+          {categories.map((category) => (
             <SelectItem 
               key={category.id} 
               value={category.id}
