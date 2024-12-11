@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,12 +13,13 @@ import { DateField } from "./incident-report/DateField";
 import { TimeField } from "./incident-report/TimeField";
 import { CategoryField } from "./incident-report/CategoryField";
 import { FileUploadField } from "./incident-report/FileUploadField";
-import { useIncidentReportSubmission } from "@/hooks/useIncidentReportSubmission";
+import { useToast } from "@/hooks/use-toast";
 import { ReportFormSchema, reportFormSchema } from "@/lib/validations/report";
 
 const IncidentReportForm = () => {
   const { id } = useParams();
-  const { handleSubmit: handleReportSubmit, isSubmitting } = useIncidentReportSubmission(id);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   const form = useForm<ReportFormSchema>({
     resolver: zodResolver(reportFormSchema),
@@ -70,8 +71,126 @@ const IncidentReportForm = () => {
   }, [report, form]);
 
   const onSubmit = async (data: ReportFormSchema) => {
-    console.log("Form submitted with data:", data);
-    await handleReportSubmit(data);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to submit a report",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Handle file uploads first if there are any
+      let evidenceData = [];
+      if (data.files?.length) {
+        const files = Array.from(data.files);
+        for (const file of files) {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Math.random()}.${fileExt}`;
+          const filePath = `${user.id}/${fileName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('evidence')
+            .upload(filePath, file);
+
+          if (uploadError) throw uploadError;
+
+          const { data: { publicUrl } } = supabase.storage
+            .from('evidence')
+            .getPublicUrl(filePath);
+
+          evidenceData.push({
+            file_url: publicUrl,
+            file_type: file.type,
+            file_name: file.name,
+            description: `Uploaded file: ${file.name}`
+          });
+        }
+      }
+
+      // Prepare report data
+      const reportData = {
+        title: data.title,
+        description: data.description,
+        incident_date: data.incident_date.toISOString().split('T')[0],
+        incident_time: data.incident_time,
+        main_category_id: data.main_category_id,
+        user_id: user.id,
+      };
+
+      // Handle report creation/update
+      if (id) {
+        const { error: updateError } = await supabase
+          .from("reports")
+          .update(reportData)
+          .eq("id", id);
+
+        if (updateError) throw updateError;
+      } else {
+        const { data: newReport, error: insertError } = await supabase
+          .from("reports")
+          .insert(reportData)
+          .select()
+          .single();
+
+        if (insertError) throw insertError;
+        id = newReport.id;
+      }
+
+      // Handle category assignments
+      if (data.categories?.length) {
+        if (id) {
+          await supabase
+            .from("report_category_assignments")
+            .delete()
+            .eq("report_id", id);
+        }
+
+        const categoryAssignments = data.categories.map(subcategoryId => ({
+          report_id: id,
+          subcategory_id: subcategoryId,
+          main_category_id: data.main_category_id,
+          is_primary: false,
+        }));
+
+        const { error: categoryError } = await supabase
+          .from("report_category_assignments")
+          .insert(categoryAssignments);
+
+        if (categoryError) throw categoryError;
+      }
+
+      // Handle evidence uploads
+      if (evidenceData.length > 0) {
+        const { error: evidenceError } = await supabase
+          .from("evidence")
+          .insert(
+            evidenceData.map(evidence => ({
+              ...evidence,
+              report_id: id,
+              uploaded_by: user.id,
+            }))
+          );
+
+        if (evidenceError) throw evidenceError;
+      }
+
+      toast({
+        title: "Success",
+        description: id ? "Report updated successfully" : "Report submitted successfully",
+      });
+
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Error submitting report:", error);
+      toast({
+        title: "Error",
+        description: "There was an error submitting your report. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -99,8 +218,8 @@ const IncidentReportForm = () => {
             </div>
             <CategoryField form={form} />
             <FileUploadField form={form} />
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Submitting..." : id ? "Update Report" : "Submit Report"}
+            <Button type="submit">
+              {id ? "Update Report" : "Submit Report"}
             </Button>
           </form>
         </Form>
