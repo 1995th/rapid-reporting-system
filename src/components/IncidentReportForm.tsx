@@ -73,6 +73,16 @@ const IncidentReportForm = () => {
     }
   }, [report, form]);
 
+  const onSubmit = async (data: ReportFormSchema) => {
+    console.log("Form submitted with data:", data);
+    try {
+      await handleSubmit(data);
+      console.log("Form submission completed");
+    } catch (error) {
+      console.error("Form submission error:", error);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <BackButton />
@@ -89,7 +99,7 @@ const IncidentReportForm = () => {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <CaseReferenceField form={form} />
             <TitleField form={form} />
             <DescriptionField form={form} />
@@ -99,7 +109,11 @@ const IncidentReportForm = () => {
             </div>
             <CategoryField form={form} />
             <FileUploadField form={form} />
-            <Button type="submit" disabled={isSubmitting}>
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+              onClick={() => console.log("Submit button clicked")}
+            >
               {isSubmitting ? "Submitting..." : id ? "Update Report" : "Submit Report"}
             </Button>
           </form>
