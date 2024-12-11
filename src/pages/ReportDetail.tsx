@@ -31,8 +31,7 @@ const ReportDetail = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("reports")
-        .select(
-          `
+        .select(`
           *,
           case_categories (
             name
@@ -41,8 +40,7 @@ const ReportDetail = () => {
             first_name,
             last_name
           )
-        `
-        )
+        `)
         .eq("id", id)
         .single();
 
@@ -66,16 +64,16 @@ const ReportDetail = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reports"] });
       toast({
-        title: "Report deleted",
-        description: "The report has been successfully deleted.",
+        title: "Success",
+        description: "Report deleted successfully",
       });
-      navigate("/analytics");
+      navigate("/");
     },
     onError: (error) => {
       console.error("Delete error:", error);
       toast({
         title: "Error",
-        description: "Failed to delete the report. Please try again.",
+        description: "Failed to delete report. Please try again.",
         variant: "destructive",
       });
     },
