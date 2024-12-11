@@ -71,7 +71,7 @@ export const SignUpForm = ({ onToggle }: { onToggle: () => void }) => {
         title: "Account created!",
         description: "Please check your email to verify your account.",
       });
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       toast({
         title: "Error",
