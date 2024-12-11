@@ -39,7 +39,14 @@ const IncidentReportForm = () => {
       
       const { data: report, error: reportError } = await supabase
         .from("reports")
-        .select("*, report_category_assignments(*)")
+        .select(`
+          *,
+          report_category_assignments (
+            main_category_id,
+            subcategory_id,
+            is_primary
+          )
+        `)
         .eq("id", id)
         .single();
       
@@ -51,11 +58,11 @@ const IncidentReportForm = () => {
       
       const secondaryCategories = report.report_category_assignments
         .filter((assignment: any) => !assignment.is_primary)
-        .map((assignment: any) => assignment.category_id);
+        .map((assignment: any) => assignment.subcategory_id);
 
       return {
         ...report,
-        primary_category_id: primaryCategory?.category_id,
+        primary_category_id: primaryCategory?.main_category_id,
         secondary_categories: secondaryCategories,
       };
     },

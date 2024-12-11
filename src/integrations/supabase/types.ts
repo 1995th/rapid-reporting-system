@@ -9,41 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      case_categories: {
-        Row: {
-          created_at: string
-          description: string | null
-          group_id: string | null
-          id: string
-          name: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          group_id?: string | null
-          id?: string
-          name: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          group_id?: string | null
-          id?: string
-          name?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "case_categories_group_id_fkey"
-            columns: ["group_id"]
-            isOneToOne: false
-            referencedRelation: "report_category_groups"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       evidence: {
         Row: {
           created_at: string
@@ -92,6 +57,30 @@ export type Database = {
           },
         ]
       }
+      main_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -124,29 +113,32 @@ export type Database = {
       }
       report_category_assignments: {
         Row: {
-          category_id: string
           created_at: string
           is_primary: boolean
+          main_category_id: string
           report_id: string
+          subcategory_id: string
         }
         Insert: {
-          category_id: string
           created_at?: string
           is_primary?: boolean
+          main_category_id: string
           report_id: string
+          subcategory_id: string
         }
         Update: {
-          category_id?: string
           created_at?: string
           is_primary?: boolean
+          main_category_id?: string
           report_id?: string
+          subcategory_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "report_category_assignments_category_id_fkey"
-            columns: ["category_id"]
+            foreignKeyName: "report_category_assignments_main_category_id_fkey"
+            columns: ["main_category_id"]
             isOneToOne: false
-            referencedRelation: "case_categories"
+            referencedRelation: "main_categories"
             referencedColumns: ["id"]
           },
           {
@@ -156,67 +148,50 @@ export type Database = {
             referencedRelation: "reports"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "report_category_assignments_subcategory_id_fkey"
+            columns: ["subcategory_id"]
+            isOneToOne: false
+            referencedRelation: "subcategories"
+            referencedColumns: ["id"]
+          },
         ]
-      }
-      report_category_groups: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          name: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          name: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          name?: string
-          updated_at?: string
-        }
-        Relationships: []
       }
       reports: {
         Row: {
-          category_id: string
           created_at: string
           description: string
           id: string
           incident_date: string | null
           incident_time: string | null
           location: string | null
+          main_category_id: string | null
           status: string
           title: string
           updated_at: string
           user_id: string
         }
         Insert: {
-          category_id: string
           created_at?: string
           description: string
           id?: string
           incident_date?: string | null
           incident_time?: string | null
           location?: string | null
+          main_category_id?: string | null
           status?: string
           title: string
           updated_at?: string
           user_id: string
         }
         Update: {
-          category_id?: string
           created_at?: string
           description?: string
           id?: string
           incident_date?: string | null
           incident_time?: string | null
           location?: string | null
+          main_category_id?: string | null
           status?: string
           title?: string
           updated_at?: string
@@ -224,10 +199,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "reports_category_id_fkey"
-            columns: ["category_id"]
+            foreignKeyName: "reports_main_category_id_fkey"
+            columns: ["main_category_id"]
             isOneToOne: false
-            referencedRelation: "case_categories"
+            referencedRelation: "main_categories"
             referencedColumns: ["id"]
           },
           {
@@ -235,6 +210,41 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subcategories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          main_category_id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          main_category_id: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          main_category_id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subcategories_main_category_id_fkey"
+            columns: ["main_category_id"]
+            isOneToOne: false
+            referencedRelation: "main_categories"
             referencedColumns: ["id"]
           },
         ]

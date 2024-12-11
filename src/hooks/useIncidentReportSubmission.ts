@@ -33,7 +33,7 @@ export const useIncidentReportSubmission = () => {
         incident_time: values.incident_time || null,
         location: values.location || null,
         user_id: user.id,
-        category_id: values.primary_category_id, // Keep this for backward compatibility
+        main_category_id: values.primary_category_id,
       };
 
       // Create or update report
@@ -61,19 +61,20 @@ export const useIncidentReportSubmission = () => {
           .eq("report_id", id);
       }
 
-      // Insert primary category
+      // Insert primary category assignment
       await supabase.from("report_category_assignments").insert({
         report_id: report.id,
-        category_id: values.primary_category_id,
+        main_category_id: values.primary_category_id,
         is_primary: true,
       });
 
-      // Insert secondary categories
+      // Insert secondary category assignments
       if (values.secondary_categories?.length > 0) {
         const secondaryAssignments = values.secondary_categories.map(
-          (categoryId: string) => ({
+          (subcategoryId: string) => ({
             report_id: report.id,
-            category_id: categoryId,
+            main_category_id: values.primary_category_id,
+            subcategory_id: subcategoryId,
             is_primary: false,
           })
         );
@@ -87,6 +88,7 @@ export const useIncidentReportSubmission = () => {
         const evidenceData = uploadedFiles.map((file) => ({
           ...file,
           report_id: report.id,
+          uploaded_by: user.id,
         }));
         await supabase.from("evidence").insert(evidenceData);
       }
