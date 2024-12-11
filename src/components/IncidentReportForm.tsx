@@ -39,16 +39,20 @@ const IncidentReportForm = () => {
     queryKey: ["report", id],
     queryFn: async () => {
       if (!id) return null;
+      console.log("Fetching report data for ID:", id);
       
-      // Fetch report data
       const { data: reportData, error: reportError } = await supabase
         .from("reports")
         .select("*, report_category_assignments(subcategory_id)")
         .eq("id", id)
         .single();
 
-      if (reportError) throw reportError;
+      if (reportError) {
+        console.error("Error fetching report:", reportError);
+        throw reportError;
+      }
 
+      console.log("Fetched report data:", reportData);
       return {
         ...reportData,
         categories: reportData.report_category_assignments.map(
@@ -61,6 +65,7 @@ const IncidentReportForm = () => {
 
   useEffect(() => {
     if (report) {
+      console.log("Setting form values with report data:", report);
       form.reset({
         title: report.title,
         description: report.description,
@@ -76,7 +81,19 @@ const IncidentReportForm = () => {
   const onSubmit = async (data: ReportFormSchema) => {
     console.log("Form submission started");
     console.log("Form data:", data);
+    
+    // Validate required fields
+    if (!data.title || !data.description || !data.main_category_id) {
+      console.error("Missing required fields:", {
+        title: !data.title,
+        description: !data.description,
+        main_category_id: !data.main_category_id,
+      });
+      return;
+    }
+
     try {
+      console.log("Calling handleSubmit with data");
       await handleSubmit(data);
       console.log("Form submission completed successfully");
     } catch (error) {

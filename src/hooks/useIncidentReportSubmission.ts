@@ -17,7 +17,7 @@ export const useIncidentReportSubmission = (id?: string) => {
       
       setIsSubmitting(true);
 
-      const user = (await supabase.auth.getUser()).data.user;
+      const { data: { user } } = await supabase.auth.getUser();
       console.log("Current user:", user);
       
       if (!user) {
@@ -164,6 +164,7 @@ export const useIncidentReportSubmission = (id?: string) => {
         description: "There was an error submitting your report. Please try again.",
         variant: "destructive",
       });
+      throw error;
     } finally {
       setIsSubmitting(false);
     }
