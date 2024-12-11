@@ -6,6 +6,7 @@ import { Pencil } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DeleteReportButton } from "@/components/reports/DeleteReportButton";
 import { ReportContent } from "@/components/reports/ReportContent";
+import { BackButton } from "@/components/layout/BackButton";
 
 const ReportDetail = () => {
   const { id } = useParams();
@@ -49,6 +50,7 @@ const ReportDetail = () => {
 
   return (
     <div className="space-y-4">
+      <BackButton />
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold tracking-tight">Report Details</h1>
         <div className="space-x-2">

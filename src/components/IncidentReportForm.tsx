@@ -1,128 +1,203 @@
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { useNavigate, useParams } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
-import { BasicFields } from "./incident-report/BasicFields";
-import { CategoryField } from "./incident-report/CategoryField";
-import { FileUploadField, fileSchema } from "./incident-report/FileUploadField";
-import { useRoleAuthorization } from "@/hooks/useRoleAuthorization";
-import { useIncidentReportSubmission } from "@/hooks/useIncidentReportSubmission";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Skeleton } from "./ui/skeleton";
-import { useEffect } from "react";
-
-const formSchema = z.object({
-  title: z.string().min(1, "Title is required").max(100, "Title is too long"),
-  description: z.string().min(1, "Description is required"),
-  secondary_categories: z.array(z.string().uuid()).min(1, "Please select at least one category"),
-  incident_date: z.string().optional(),
-  incident_time: z.string().optional(),
-  location: z.string().optional(),
-  files: fileSchema,
-});
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
+import { BackButton } from "@/components/layout/BackButton";
+import { CategorySelect } from "./reports/CategorySelect";
+import { DatePicker } from "./ui/date-picker";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
+import { ReportFormSchema, reportFormSchema } from "@/lib/validations/report";
 
 const IncidentReportForm = () => {
-  const navigate = useNavigate();
   const { id } = useParams();
-  const { data: userProfile } = useRoleAuthorization();
-  const { handleSubmit: submitReport, isSubmitting } = useIncidentReportSubmission();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch existing report data if editing
-  const { data: existingReport, isLoading: isLoadingReport } = useQuery({
+  const form = useForm<ReportFormSchema>({
+    resolver: zodResolver(reportFormSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      incident_date: new Date(),
+      main_category_id: "",
+    },
+  });
+
+  const { data: report } = useQuery({
     queryKey: ["report", id],
     queryFn: async () => {
       if (!id) return null;
-      
-      const { data: report, error: reportError } = await supabase
+      const { data, error } = await supabase
         .from("reports")
-        .select(`
-          *,
-          report_category_assignments (
-            subcategory_id
-          )
-        `)
+        .select("*")
         .eq("id", id)
         .single();
-      
-      if (reportError) throw reportError;
 
-      return {
-        ...report,
-        secondary_categories: report.report_category_assignments.map(
-          (assignment: any) => assignment.subcategory_id
-        ),
-      };
+      if (error) throw error;
+      return data;
     },
     enabled: !!id,
   });
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      secondary_categories: [],
-      incident_date: "",
-      incident_time: "",
-      location: "",
-      files: undefined,
-    },
-  });
-
-  // Update form values when existing report data is loaded
   useEffect(() => {
-    if (existingReport) {
+    if (report) {
       form.reset({
-        title: existingReport.title,
-        description: existingReport.description,
-        secondary_categories: existingReport.secondary_categories || [],
-        incident_date: existingReport.incident_date || "",
-        incident_time: existingReport.incident_time || "",
-        location: existingReport.location || "",
-        files: undefined,
+        title: report.title,
+        description: report.description,
+        incident_date: new Date(report.incident_date),
+        main_category_id: report.main_category_id,
       });
     }
-  }, [existingReport, form]);
+  }, [report, form]);
 
-  // If user is not an officer or admin, redirect them
-  if (userProfile && userProfile.role !== 'officer' && userProfile.role !== 'admin') {
-    navigate('/');
-    return null;
-  }
+  const onSubmit = async (data: ReportFormSchema) => {
+    try {
+      setIsSubmitting(true);
 
-  if (id && isLoadingReport) {
-    return (
-      <div className="max-w-2xl mx-auto p-6">
-        <Skeleton className="h-8 w-1/2 mb-4" />
-        <Skeleton className="h-64 w-full" />
-      </div>
-    );
-  }
+      if (id) {
+        const { error } = await supabase
+          .from("reports")
+          .update({
+            title: data.title,
+            description: data.description,
+            incident_date: data.incident_date.toISOString(),
+            main_category_id: data.main_category_id,
+          })
+          .eq("id", id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Report updated",
+          description: "Your report has been updated successfully.",
+        });
+      } else {
+        const { error } = await supabase.from("reports").insert([
+          {
+            title: data.title,
+            description: data.description,
+            incident_date: data.incident_date.toISOString(),
+            main_category_id: data.main_category_id,
+          },
+        ]);
+
+        if (error) throw error;
+
+        toast({
+          title: "Report submitted",
+          description: "Your report has been submitted successfully.",
+        });
+      }
+
+      navigate("/");
+    } catch (error) {
+      console.error("Error submitting report:", error);
+      toast({
+        title: "Error",
+        description: "There was an error submitting your report. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold tracking-tight">
-          {id ? "Edit Incident Report" : "Submit Incident Report"}
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Please provide details about the incident you'd like to report.
-        </p>
-      </div>
+    <div className="space-y-4">
+      <BackButton />
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {id ? "Edit Report" : "Submit New Report"}
+          </h1>
+          <p className="text-muted-foreground">
+            {id
+              ? "Update the details of your incident report"
+              : "Fill out the details of your incident report"}
+          </p>
+        </div>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(submitReport)} className="space-y-6">
-          <BasicFields form={form} />
-          <CategoryField form={form} />
-          <FileUploadField form={form} />
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Submitting..." : (id ? "Update Report" : "Submit Report")}
-          </Button>
-        </form>
-      </Form>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter report title" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Provide a detailed description of the incident"
+                      className="min-h-[100px]"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="incident_date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Incident Date</FormLabel>
+                  <FormControl>
+                    <DatePicker
+                      date={field.value}
+                      onChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="main_category_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Category</FormLabel>
+                  <FormControl>
+                    <CategorySelect
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Submitting..." : id ? "Update Report" : "Submit Report"}
+            </Button>
+          </form>
+        </Form>
+      </div>
     </div>
   );
 };
