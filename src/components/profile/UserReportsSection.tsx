@@ -27,6 +27,10 @@ export const UserReportsSection = ({ userId }: { userId: string }) => {
               name
             ),
             is_primary
+          ),
+          profiles (
+            first_name,
+            last_name
           )
         `)
         .eq("user_id", userId)
