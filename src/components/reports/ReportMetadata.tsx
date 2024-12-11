@@ -28,7 +28,7 @@ export const ReportMetadata = ({ status, reporter, incidentDate }: ReportMetadat
         </Badge>
       </div>
       <div>
-        <h3 className="font-semibold text-sm text-muted-foreground">Reporter</h3>
+        <h3 className="font-semibold text-sm text-muted-foreground">Officer</h3>
         <p>
           {reporter.first_name} {reporter.last_name}
         </p>

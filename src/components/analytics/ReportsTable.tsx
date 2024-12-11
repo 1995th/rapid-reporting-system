@@ -34,7 +34,7 @@ export const ReportsTable = ({ reports }: ReportsTableProps) => {
             <TableHead className="min-w-[150px]" scope="col">Title</TableHead>
             <TableHead className="hidden md:table-cell" scope="col">Category</TableHead>
             <TableHead scope="col">Status</TableHead>
-            <TableHead className="hidden sm:table-cell" scope="col">Reporter</TableHead>
+            <TableHead className="hidden sm:table-cell" scope="col">Officer</TableHead>
             <TableHead className="hidden lg:table-cell" scope="col">Date</TableHead>
             <TableHead className="text-right" scope="col">Actions</TableHead>
           </TableRow>
