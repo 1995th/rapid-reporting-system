@@ -30,7 +30,7 @@ interface SearchFiltersProps {
 
 export function SearchFilters({
   filters,
-  categories,
+  categories = [], // Provide default empty array
   onFiltersChange,
 }: SearchFiltersProps) {
   return (
@@ -62,7 +62,7 @@ export function SearchFilters({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Categories</SelectItem>
-          {categories.map((category) => (
+          {Array.isArray(categories) && categories.map((category) => (
             <SelectItem 
               key={category.id} 
               value={category.id}

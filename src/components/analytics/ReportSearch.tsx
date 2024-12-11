@@ -18,7 +18,7 @@ const ReportSearch = () => {
     dateRange: undefined,
   });
 
-  const { data: categories, isLoading: isCategoriesLoading } = useQuery({
+  const { data: categories = [], isLoading: isCategoriesLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -49,7 +49,7 @@ const ReportSearch = () => {
         <div className="space-y-4 md:space-y-6">
           <SearchFilters
             filters={filters}
-            categories={categories || []}
+            categories={categories}
             onFiltersChange={setFilters}
           />
 
