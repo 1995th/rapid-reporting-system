@@ -28,6 +28,7 @@ export const useIncidentReportSubmission = (id?: string) => {
       }
 
       if (id) {
+        // Update existing report
         const { error: updateError } = await supabase
           .from("reports")
           .update({
@@ -40,6 +41,29 @@ export const useIncidentReportSubmission = (id?: string) => {
           .eq("id", id);
 
         if (updateError) throw updateError;
+
+        // Update category assignments
+        if (data.categories?.length) {
+          // Delete existing assignments
+          await supabase
+            .from("report_category_assignments")
+            .delete()
+            .eq("report_id", id);
+
+          // Insert new assignments
+          const { error: categoryError } = await supabase
+            .from("report_category_assignments")
+            .insert(
+              data.categories.map(subcategoryId => ({
+                report_id: id,
+                subcategory_id: subcategoryId,
+                main_category_id: data.main_category_id,
+                is_primary: false,
+              }))
+            );
+
+          if (categoryError) throw categoryError;
+        }
 
         // Insert new evidence if files were uploaded
         if (evidenceData.length > 0) {
@@ -61,6 +85,7 @@ export const useIncidentReportSubmission = (id?: string) => {
           description: "Your report has been updated successfully.",
         });
       } else {
+        // Create new report
         const { data: reportData, error: insertError } = await supabase
           .from("reports")
           .insert({
@@ -75,6 +100,22 @@ export const useIncidentReportSubmission = (id?: string) => {
           .single();
 
         if (insertError) throw insertError;
+
+        // Insert category assignments
+        if (data.categories?.length) {
+          const { error: categoryError } = await supabase
+            .from("report_category_assignments")
+            .insert(
+              data.categories.map(subcategoryId => ({
+                report_id: reportData.id,
+                subcategory_id: subcategoryId,
+                main_category_id: data.main_category_id,
+                is_primary: false,
+              }))
+            );
+
+          if (categoryError) throw categoryError;
+        }
 
         // Insert evidence if files were uploaded
         if (evidenceData.length > 0) {

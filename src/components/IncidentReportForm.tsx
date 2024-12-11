@@ -28,6 +28,7 @@ const IncidentReportForm = () => {
       incident_date: new Date(),
       incident_time: "",
       main_category_id: "",
+      categories: [],
       files: undefined,
     },
   });
@@ -36,14 +37,22 @@ const IncidentReportForm = () => {
     queryKey: ["report", id],
     queryFn: async () => {
       if (!id) return null;
-      const { data, error } = await supabase
+      
+      // Fetch report data
+      const { data: reportData, error: reportError } = await supabase
         .from("reports")
-        .select("*")
+        .select("*, report_category_assignments(subcategory_id)")
         .eq("id", id)
         .single();
 
-      if (error) throw error;
-      return data;
+      if (reportError) throw reportError;
+
+      return {
+        ...reportData,
+        categories: reportData.report_category_assignments.map(
+          (assignment: any) => assignment.subcategory_id
+        ),
+      };
     },
     enabled: !!id,
   });
@@ -56,6 +65,7 @@ const IncidentReportForm = () => {
         incident_date: new Date(report.incident_date),
         incident_time: report.incident_time,
         main_category_id: report.main_category_id,
+        categories: report.categories,
       });
     }
   }, [report, form]);

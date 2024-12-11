@@ -9,6 +9,7 @@ export const reportFormSchema = z.object({
   }),
   incident_time: z.string().optional(),
   main_category_id: z.string().min(1, "Category is required"),
+  categories: z.array(z.string()).optional(),
   files: fileSchema,
 });
 
