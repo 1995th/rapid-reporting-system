@@ -58,7 +58,7 @@ export const ReportsTable = ({ reports }: ReportsTableProps) => {
                 {report.title}
               </TableCell>
               <TableCell className="hidden md:table-cell">
-                {report.report_category_assignments?.[0]?.main_categories?.name || "Uncategorized"}
+                {getPrimaryCategory(report)}
               </TableCell>
               <TableCell>
                 <StatusBadge status={report.status} />
