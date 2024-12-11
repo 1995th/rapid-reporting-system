@@ -21,7 +21,10 @@ const signInSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-type SignInValues = z.infer<typeof signInSchema>;
+type SignInValues = {
+  email: string;
+  password: string;
+};
 
 export const SignInForm = ({ onToggle }: { onToggle: () => void }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -39,7 +42,10 @@ export const SignInForm = ({ onToggle }: { onToggle: () => void }) => {
   const onSubmit = async (values: SignInValues) => {
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword(values);
+      const { error } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
+      });
       if (error) throw error;
       
       toast({
