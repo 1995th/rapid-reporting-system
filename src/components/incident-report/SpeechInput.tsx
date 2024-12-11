@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Mic, MicOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -10,6 +10,7 @@ interface SpeechInputProps {
 export const SpeechInput = ({ onTranscript }: SpeechInputProps) => {
   const [isListening, setIsListening] = useState(false);
   const { toast } = useToast();
+  const recognitionRef = useRef<any>(null);
   
   const startListening = () => {
     if (!('webkitSpeechRecognition' in window)) {
@@ -21,11 +22,11 @@ export const SpeechInput = ({ onTranscript }: SpeechInputProps) => {
       return;
     }
 
-    const recognition = new (window as any).webkitSpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
+    recognitionRef.current = new (window as any).webkitSpeechRecognition();
+    recognitionRef.current.continuous = true;
+    recognitionRef.current.interimResults = true;
     
-    recognition.onstart = () => {
+    recognitionRef.current.onstart = () => {
       setIsListening(true);
       toast({
         title: "Listening...",
@@ -33,7 +34,7 @@ export const SpeechInput = ({ onTranscript }: SpeechInputProps) => {
       });
     };
 
-    recognition.onerror = (event: any) => {
+    recognitionRef.current.onerror = (event: any) => {
       console.error('Speech recognition error', event.error);
       setIsListening(false);
       toast({
@@ -43,11 +44,11 @@ export const SpeechInput = ({ onTranscript }: SpeechInputProps) => {
       });
     };
 
-    recognition.onend = () => {
+    recognitionRef.current.onend = () => {
       setIsListening(false);
     };
 
-    recognition.onresult = (event: any) => {
+    recognitionRef.current.onresult = (event: any) => {
       let finalTranscript = '';
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript;
@@ -65,13 +66,19 @@ export const SpeechInput = ({ onTranscript }: SpeechInputProps) => {
       }
     };
 
-    recognition.start();
+    recognitionRef.current.start();
   };
 
   const stopListening = () => {
-    const recognition = new (window as any).webkitSpeechRecognition();
-    recognition.stop();
-    setIsListening(false);
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+      setIsListening(false);
+      toast({
+        title: "Stopped Recording",
+        description: "Speech recognition has been stopped.",
+      });
+    }
   };
 
   return (
