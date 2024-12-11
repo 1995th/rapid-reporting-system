@@ -93,14 +93,14 @@ const IncidentReportForm = () => {
 
       if (id) {
         // Start a transaction using RPC
-        const { data: result, error: rpcError } = await supabase.rpc('update_report_with_categories', {
+        const { error: rpcError } = await supabase.rpc('update_report_with_categories', {
           p_report_id: id,
           p_report_data: reportData,
           p_categories: data.categories?.map(subcategoryId => ({
             subcategory_id: subcategoryId,
             main_category_id: data.main_category_id,
             is_primary: false,
-          })) || []
+          }))
         });
 
         if (rpcError) throw rpcError;
