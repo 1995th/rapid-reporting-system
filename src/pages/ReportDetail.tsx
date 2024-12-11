@@ -53,29 +53,15 @@ const ReportDetail = () => {
 
   const deleteReportMutation = useMutation({
     mutationFn: async () => {
-      // First, delete all evidence records associated with this report
-      const { error: evidenceError } = await supabase
-        .from("evidence")
-        .delete()
-        .eq("report_id", id);
-
-      if (evidenceError) throw evidenceError;
-
-      // Then, delete all user activities associated with this report
-      const { error: activitiesError } = await supabase
-        .from("user_activities")
-        .delete()
-        .eq("report_id", id);
-
-      if (activitiesError) throw activitiesError;
-
-      // Finally, delete the report itself
-      const { error: reportError } = await supabase
+      const { error } = await supabase
         .from("reports")
         .delete()
         .eq("id", id);
 
-      if (reportError) throw reportError;
+      if (error) {
+        console.error("Delete error:", error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reports"] });
