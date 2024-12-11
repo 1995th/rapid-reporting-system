@@ -28,6 +28,7 @@ const IncidentReportForm = () => {
       description: "",
       incident_date: new Date(),
       incident_time: "",
+      location: "",
       main_category_id: "",
       categories: [],
       files: undefined,
@@ -64,6 +65,7 @@ const IncidentReportForm = () => {
         description: report.description,
         incident_date: new Date(report.incident_date),
         incident_time: report.incident_time,
+        location: report.location,
         main_category_id: report.main_category_id,
         categories: report.categories,
       });
@@ -87,6 +89,7 @@ const IncidentReportForm = () => {
         description: data.description,
         incident_date: data.incident_date.toISOString().split('T')[0],
         incident_time: data.incident_time,
+        location: data.location,
         main_category_id: data.main_category_id,
         user_id: user.id,
       };
