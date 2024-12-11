@@ -1,26 +1,26 @@
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useParams, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery } from "@tanstack/react-query";
+import { useNavigate, useParams } from "react-router-dom";
+import { useSession } from "@supabase/auth-helpers-react";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { reportFormSchema, type ReportFormSchema } from "@/lib/validations/report";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { BackButton } from "@/components/layout/BackButton";
-import { TitleField } from "./incident-report/TitleField";
-import { DescriptionField } from "./incident-report/DescriptionField";
+import { BasicFields } from "./incident-report/BasicFields";
+import { CategoryField } from "./incident-report/CategoryField";
 import { DateField } from "./incident-report/DateField";
 import { TimeField } from "./incident-report/TimeField";
-import { CategoryField } from "./incident-report/CategoryField";
+import { DescriptionField } from "./incident-report/DescriptionField";
 import { FileUploadField } from "./incident-report/FileUploadField";
-import { ReportFormSchema, reportFormSchema } from "@/lib/validations/report";
-import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
 
 const IncidentReportForm = () => {
   const { id } = useParams();
+  const session = useSession();
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
   const form = useForm<ReportFormSchema>({
     resolver: zodResolver(reportFormSchema),
     defaultValues: {
@@ -31,7 +31,7 @@ const IncidentReportForm = () => {
       location: "",
       main_category_id: "",
       categories: [],
-      files: undefined,
+      files: [],
     },
   });
 
@@ -39,67 +39,60 @@ const IncidentReportForm = () => {
     queryKey: ["report", id],
     queryFn: async () => {
       if (!id) return null;
-      
-      const { data: reportData, error: reportError } = await supabase
+
+      const { data, error } = await supabase
         .from("reports")
-        .select("*, report_category_assignments(subcategory_id)")
+        .select(`
+          *,
+          report_category_assignments (
+            subcategory_id
+          )
+        `)
         .eq("id", id)
         .single();
 
-      if (reportError) throw reportError;
-
-      return {
-        ...reportData,
-        categories: reportData.report_category_assignments.map(
-          (assignment: any) => assignment.subcategory_id
-        ),
-      };
+      if (error) throw error;
+      return data;
     },
     enabled: !!id,
+    onSuccess: (data) => {
+      if (data) {
+        form.reset({
+          title: data.title,
+          description: data.description,
+          incident_date: new Date(data.incident_date),
+          incident_time: data.incident_time || "",
+          location: data.location || "",
+          main_category_id: data.main_category_id || "",
+          categories: data.report_category_assignments.map(
+            (assignment) => assignment.subcategory_id
+          ),
+          files: [],
+        });
+      }
+    },
   });
-
-  useEffect(() => {
-    if (report) {
-      form.reset({
-        title: report.title,
-        description: report.description,
-        incident_date: new Date(report.incident_date),
-        incident_time: report.incident_time,
-        location: report.location,
-        main_category_id: report.main_category_id,
-        categories: report.categories,
-      });
-    }
-  }, [report, form]);
 
   const onSubmit = async (data: ReportFormSchema) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to submit a report",
-          variant: "destructive",
-        });
-        return;
-      }
+      if (!session?.user?.id) throw new Error("No user found");
 
       const reportData = {
         title: data.title,
         description: data.description,
-        incident_date: data.incident_date.toISOString().split('T')[0],
+        incident_date: data.incident_date.toISOString(),
         incident_time: data.incident_time,
         location: data.location,
         main_category_id: data.main_category_id,
-        user_id: user.id,
+        user_id: session.user.id,
       };
 
       if (id) {
         // Use the RPC function for updating reports with categories
-        const { error: rpcError } = await supabase.rpc('update_report_with_categories', {
+        const { error: rpcError } = await supabase.rpc("update_report_with_categories", {
           p_report_id: id,
           p_report_data: reportData,
-          p_categories: data.categories?.map(subcategoryId => ({
+          p_categories: data.categories.map((subcategoryId) => ({
             subcategory_id: subcategoryId,
             main_category_id: data.main_category_id,
             is_primary: false,
@@ -116,20 +109,19 @@ const IncidentReportForm = () => {
           description: "Report updated successfully",
         });
       } else {
-        // Create new report
-        const { data: newReport, error: insertError } = await supabase
+        const { data: newReport, error: reportError } = await supabase
           .from("reports")
           .insert(reportData)
           .select()
           .single();
 
-        if (insertError) throw insertError;
+        if (reportError) throw reportError;
 
-        if (data.categories?.length) {
+        if (data.categories.length > 0) {
           const { error: categoryError } = await supabase
             .from("report_category_assignments")
             .insert(
-              data.categories.map(subcategoryId => ({
+              data.categories.map((subcategoryId) => ({
                 report_id: newReport.id,
                 subcategory_id: subcategoryId,
                 main_category_id: data.main_category_id,
@@ -140,55 +132,69 @@ const IncidentReportForm = () => {
           if (categoryError) throw categoryError;
         }
 
+        if (data.files.length > 0) {
+          const uploadPromises = data.files.map(async (file) => {
+            const fileName = `${newReport.id}/${file.name}`;
+            const { error: uploadError } = await supabase.storage
+              .from("evidence")
+              .upload(fileName, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data: fileUrl } = supabase.storage
+              .from("evidence")
+              .getPublicUrl(fileName);
+
+            return {
+              report_id: newReport.id,
+              file_url: fileUrl.publicUrl,
+              file_type: file.type,
+              uploaded_by: session.user.id,
+            };
+          });
+
+          const uploadedFiles = await Promise.all(uploadPromises);
+
+          const { error: evidenceError } = await supabase
+            .from("evidence")
+            .insert(uploadedFiles);
+
+          if (evidenceError) throw evidenceError;
+        }
+
         toast({
           title: "Success",
-          description: "Report submitted successfully",
+          description: "Report created successfully",
         });
       }
 
       navigate("/dashboard");
-    } catch (error: any) {
-      console.error("Submission error:", error);
+    } catch (error) {
+      console.error("Error:", error);
       toast({
         title: "Error",
-        description: error.message || "An error occurred while submitting the report",
+        description: "Something went wrong. Please try again.",
         variant: "destructive",
       });
     }
   };
 
   return (
-    <div className="space-y-4">
-      <BackButton />
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            {id ? "Edit Report" : "Submit New Report"}
-          </h1>
-          <p className="text-muted-foreground">
-            {id
-              ? "Update the details of your incident report"
-              : "Fill out the details of your incident report"}
-          </p>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <BasicFields />
+        <CategoryField />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <DateField />
+          <TimeField />
         </div>
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <TitleField form={form} />
-            <DescriptionField form={form} />
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <DateField form={form} />
-              <TimeField form={form} />
-            </div>
-            <CategoryField form={form} />
-            <FileUploadField form={form} />
-            <Button type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? "Submitting..." : (id ? "Update Report" : "Submit Report")}
-            </Button>
-          </form>
-        </Form>
-      </div>
-    </div>
+        <DescriptionField />
+        <FileUploadField />
+        <Button type="submit" className="w-full">
+          {id ? "Update Report" : "Submit Report"}
+        </Button>
+      </form>
+    </Form>
   );
 };
 
