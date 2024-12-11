@@ -7,29 +7,6 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-background via-background/95 to-muted">
-      {/* Decorative background elements */}
-      <div className="absolute inset-0 bg-grid-white/[0.02] -z-10" />
-      <div className="absolute h-full w-full">
-        <div className="absolute top-1/4 -left-4 w-72 h-72 bg-primary/10 rounded-full filter blur-3xl opacity-50 animate-pulse" />
-        <div className="absolute bottom-1/4 -right-4 w-72 h-72 bg-primary/10 rounded-full filter blur-3xl opacity-50 animate-pulse delay-1000" />
-      </div>
-      
-      {/* Content */}
-      I'll help update the landing page with a cleaner glassmorphism design and reduce the text content while maintaining the professional look.
-
-<lov-code>
-Let's update the Landing page and add glassmorphism utilities to the Tailwind config:
-
-<lov-write file_path="src/pages/Landing.tsx">
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Siren } from "lucide-react";
-
-const Landing = () => {
-  const navigate = useNavigate();
-
-  return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-background via-background/95 to-muted">
       {/* Gradient orbs for visual interest */}
       <div className="absolute top-1/4 -left-20 w-72 h-72 bg-primary/20 rounded-full blur-3xl" />
       <div className="absolute bottom-1/4 -right-20 w-72 h-72 bg-secondary/20 rounded-full blur-3xl" />
