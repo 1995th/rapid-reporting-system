@@ -11,18 +11,19 @@ export const useReportData = (filters: SearchFilters, currentPage: number) => {
     queryFn: async () => {
       let query = supabase
         .from("reports")
-        .select(
-          `
+        .select(`
           *,
-          case_categories (
-            name
+          report_category_assignments!report_category_assignments_report_id_fkey (
+            case_categories (
+              name
+            ),
+            is_primary
           ),
           profiles (
             first_name,
             last_name
           )
-        `
-        )
+        `)
         .order("created_at", { ascending: false });
 
       // Apply filters

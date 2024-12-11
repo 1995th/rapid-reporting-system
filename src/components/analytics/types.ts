@@ -6,14 +6,19 @@ export interface SearchFilters {
   dateRange: DateRange | undefined;
 }
 
+export interface CategoryAssignment {
+  case_categories: {
+    name: string;
+  };
+  is_primary: boolean;
+}
+
 export interface Report {
   id: string;
   title: string;
   status: string;
   incident_date: string;
-  case_categories: {
-    name: string;
-  };
+  report_category_assignments: CategoryAssignment[];
   profiles: {
     first_name: string;
     last_name: string;

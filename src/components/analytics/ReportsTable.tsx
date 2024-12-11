@@ -19,6 +19,13 @@ interface ReportsTableProps {
 export const ReportsTable = ({ reports }: ReportsTableProps) => {
   const navigate = useNavigate();
 
+  const getPrimaryCategory = (report: Report) => {
+    const primaryAssignment = report.report_category_assignments?.find(
+      (assignment) => assignment.is_primary
+    );
+    return primaryAssignment?.case_categories.name || "Uncategorized";
+  };
+
   return (
     <div className="overflow-x-auto rounded-md border" role="region" aria-label="Reports table">
       <Table>
@@ -51,7 +58,7 @@ export const ReportsTable = ({ reports }: ReportsTableProps) => {
                 {report.title}
               </TableCell>
               <TableCell className="hidden md:table-cell">
-                {report.case_categories?.name}
+                {getPrimaryCategory(report)}
               </TableCell>
               <TableCell>
                 <StatusBadge status={report.status} />
