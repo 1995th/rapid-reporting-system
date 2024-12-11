@@ -37,7 +37,6 @@ const IncidentReportForm = () => {
     queryFn: async () => {
       if (!id) return null;
       
-      // Fetch report details
       const { data: report, error: reportError } = await supabase
         .from("reports")
         .select("*, report_category_assignments(*)")
@@ -46,7 +45,6 @@ const IncidentReportForm = () => {
       
       if (reportError) throw reportError;
       
-      // Transform category assignments
       const primaryCategory = report.report_category_assignments.find(
         (assignment: any) => assignment.is_primary
       );
@@ -74,6 +72,7 @@ const IncidentReportForm = () => {
       incident_date: "",
       incident_time: "",
       location: "",
+      files: undefined,
     },
   });
 
@@ -83,8 +82,8 @@ const IncidentReportForm = () => {
       form.reset({
         title: existingReport.title,
         description: existingReport.description,
-        primary_category_id: existingReport.primary_category_id,
-        secondary_categories: existingReport.secondary_categories,
+        primary_category_id: existingReport.primary_category_id || "",
+        secondary_categories: existingReport.secondary_categories || [],
         incident_date: existingReport.incident_date || "",
         incident_time: existingReport.incident_time || "",
         location: existingReport.location || "",
