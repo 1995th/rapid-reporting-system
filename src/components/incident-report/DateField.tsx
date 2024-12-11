@@ -5,24 +5,24 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { CategorySelect } from "@/components/reports/CategorySelect";
+import { DatePicker } from "@/components/ui/date-picker";
 import { UseFormReturn } from "react-hook-form";
 
-interface CategoryFieldProps {
+interface DateFieldProps {
   form: UseFormReturn<any>;
 }
 
-export const CategoryField = ({ form }: CategoryFieldProps) => {
+export const DateField = ({ form }: DateFieldProps) => {
   return (
     <FormField
       control={form.control}
-      name="main_category_id"
+      name="incident_date"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Category</FormLabel>
+          <FormLabel>Incident Date</FormLabel>
           <FormControl>
-            <CategorySelect
-              value={field.value}
+            <DatePicker
+              date={field.value}
               onChange={field.onChange}
             />
           </FormControl>

@@ -5,26 +5,23 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { CategorySelect } from "@/components/reports/CategorySelect";
+import { Input } from "@/components/ui/input";
 import { UseFormReturn } from "react-hook-form";
 
-interface CategoryFieldProps {
+interface TitleFieldProps {
   form: UseFormReturn<any>;
 }
 
-export const CategoryField = ({ form }: CategoryFieldProps) => {
+export const TitleField = ({ form }: TitleFieldProps) => {
   return (
     <FormField
       control={form.control}
-      name="main_category_id"
+      name="title"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Category</FormLabel>
+          <FormLabel>Title</FormLabel>
           <FormControl>
-            <CategorySelect
-              value={field.value}
-              onChange={field.onChange}
-            />
+            <Input placeholder="Enter report title" {...field} />
           </FormControl>
           <FormMessage />
         </FormItem>

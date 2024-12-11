@@ -5,25 +5,26 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { CategorySelect } from "@/components/reports/CategorySelect";
+import { Textarea } from "@/components/ui/textarea";
 import { UseFormReturn } from "react-hook-form";
 
-interface CategoryFieldProps {
+interface DescriptionFieldProps {
   form: UseFormReturn<any>;
 }
 
-export const CategoryField = ({ form }: CategoryFieldProps) => {
+export const DescriptionField = ({ form }: DescriptionFieldProps) => {
   return (
     <FormField
       control={form.control}
-      name="main_category_id"
+      name="description"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Category</FormLabel>
+          <FormLabel>Description</FormLabel>
           <FormControl>
-            <CategorySelect
-              value={field.value}
-              onChange={field.onChange}
+            <Textarea
+              placeholder="Provide a detailed description of the incident"
+              className="min-h-[100px]"
+              {...field}
             />
           </FormControl>
           <FormMessage />

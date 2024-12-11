@@ -1,67 +1,61 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "./use-toast";
-import {
-  saveReport,
-  deleteExistingCategoryAssignments,
-  createCategoryAssignments,
-  saveEvidence,
-} from "@/services/reportSubmissionService";
+import { useToast } from "@/components/ui/use-toast";
+import { ReportFormSchema } from "@/lib/validations/report";
 
-export const useIncidentReportSubmission = () => {
+export const useIncidentReportSubmission = (id?: string) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { toast } = useToast();
 
-  const handleSubmit = async (values: any) => {
-    setIsSubmitting(true);
+  const handleSubmit = async (data: ReportFormSchema) => {
     try {
+      setIsSubmitting(true);
+
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) throw new Error("No user found");
 
-      // Prepare report data
-      const reportData = {
-        title: values.title,
-        description: values.description,
-        incident_date: values.incident_date || null,
-        incident_time: values.incident_time || null,
-        location: values.location || null,
-        user_id: user.id,
-      };
-
-      // Save report
-      const report = await saveReport(reportData, id);
-
-      // Handle category assignments
       if (id) {
-        await deleteExistingCategoryAssignments(id);
-      }
+        const { error } = await supabase
+          .from("reports")
+          .update({
+            title: data.title,
+            description: data.description,
+            incident_date: data.incident_date.toISOString(),
+            main_category_id: data.main_category_id,
+          })
+          .eq("id", id);
 
-      if (values.secondary_categories?.length > 0) {
-        await createCategoryAssignments(
-          report.id,
-          values.secondary_categories
-        );
-      }
+        if (error) throw error;
 
-      // Handle file uploads
-      if (values.files?.length > 0) {
-        await saveEvidence(Array.from(values.files), report.id, user.id);
-      }
+        toast({
+          title: "Report updated",
+          description: "Your report has been updated successfully.",
+        });
+      } else {
+        const { error } = await supabase.from("reports").insert({
+          title: data.title,
+          description: data.description,
+          incident_date: data.incident_date.toISOString(),
+          main_category_id: data.main_category_id,
+          user_id: user.id,
+        });
 
-      toast({
-        title: "Success",
-        description: id ? "Report updated successfully" : "Report submitted successfully",
-      });
+        if (error) throw error;
+
+        toast({
+          title: "Report submitted",
+          description: "Your report has been submitted successfully.",
+        });
+      }
 
       navigate("/");
-    } catch (error: any) {
-      console.error("Submission error:", error);
+    } catch (error) {
+      console.error("Error submitting report:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to submit report",
+        description: "There was an error submitting your report. Please try again.",
         variant: "destructive",
       });
     } finally {
