@@ -10,7 +10,9 @@ import { BackButton } from "@/components/layout/BackButton";
 import { TitleField } from "./incident-report/TitleField";
 import { DescriptionField } from "./incident-report/DescriptionField";
 import { DateField } from "./incident-report/DateField";
+import { TimeField } from "./incident-report/TimeField";
 import { CategoryField } from "./incident-report/CategoryField";
+import { FileUploadField } from "./incident-report/FileUploadField";
 import { useIncidentReportSubmission } from "@/hooks/useIncidentReportSubmission";
 import { ReportFormSchema, reportFormSchema } from "@/lib/validations/report";
 
@@ -24,7 +26,9 @@ const IncidentReportForm = () => {
       title: "",
       description: "",
       incident_date: new Date(),
+      incident_time: "",
       main_category_id: "",
+      files: undefined,
     },
   });
 
@@ -50,6 +54,7 @@ const IncidentReportForm = () => {
         title: report.title,
         description: report.description,
         incident_date: new Date(report.incident_date),
+        incident_time: report.incident_time,
         main_category_id: report.main_category_id,
       });
     }
@@ -74,8 +79,12 @@ const IncidentReportForm = () => {
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <TitleField form={form} />
             <DescriptionField form={form} />
-            <DateField form={form} />
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <DateField form={form} />
+              <TimeField form={form} />
+            </div>
             <CategoryField form={form} />
+            <FileUploadField form={form} />
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Submitting..." : id ? "Update Report" : "Submit Report"}
             </Button>

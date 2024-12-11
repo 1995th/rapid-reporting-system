@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { ReportFormSchema } from "@/lib/validations/report";
+import { uploadFileToStorage } from "@/utils/fileUpload";
 
 export const useIncidentReportSubmission = (id?: string) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -16,33 +17,79 @@ export const useIncidentReportSubmission = (id?: string) => {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) throw new Error("No user found");
 
+      // Handle file uploads if files are present
+      let evidenceData = [];
+      if (data.files?.length) {
+        const files = Array.from(data.files);
+        const uploadPromises = files.map(file => 
+          uploadFileToStorage(file, user.id)
+        );
+        evidenceData = await Promise.all(uploadPromises);
+      }
+
       if (id) {
-        const { error } = await supabase
+        const { error: updateError } = await supabase
           .from("reports")
           .update({
             title: data.title,
             description: data.description,
             incident_date: data.incident_date.toISOString(),
+            incident_time: data.incident_time,
             main_category_id: data.main_category_id,
           })
           .eq("id", id);
 
-        if (error) throw error;
+        if (updateError) throw updateError;
+
+        // Insert new evidence if files were uploaded
+        if (evidenceData.length > 0) {
+          const { error: evidenceError } = await supabase
+            .from("evidence")
+            .insert(
+              evidenceData.map(evidence => ({
+                ...evidence,
+                report_id: id,
+                uploaded_by: user.id,
+              }))
+            );
+
+          if (evidenceError) throw evidenceError;
+        }
 
         toast({
           title: "Report updated",
           description: "Your report has been updated successfully.",
         });
       } else {
-        const { error } = await supabase.from("reports").insert({
-          title: data.title,
-          description: data.description,
-          incident_date: data.incident_date.toISOString(),
-          main_category_id: data.main_category_id,
-          user_id: user.id,
-        });
+        const { data: reportData, error: insertError } = await supabase
+          .from("reports")
+          .insert({
+            title: data.title,
+            description: data.description,
+            incident_date: data.incident_date.toISOString(),
+            incident_time: data.incident_time,
+            main_category_id: data.main_category_id,
+            user_id: user.id,
+          })
+          .select()
+          .single();
 
-        if (error) throw error;
+        if (insertError) throw insertError;
+
+        // Insert evidence if files were uploaded
+        if (evidenceData.length > 0) {
+          const { error: evidenceError } = await supabase
+            .from("evidence")
+            .insert(
+              evidenceData.map(evidence => ({
+                ...evidence,
+                report_id: reportData.id,
+                uploaded_by: user.id,
+              }))
+            );
+
+          if (evidenceError) throw evidenceError;
+        }
 
         toast({
           title: "Report submitted",
