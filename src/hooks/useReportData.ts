@@ -13,11 +13,13 @@ export const useReportData = (filters: SearchFilters, currentPage: number) => {
         .from("reports")
         .select(`
           *,
-          report_category_assignments!report_category_assignments_report_id_fkey (
+          report_category_assignments!inner (
+            main_category_id,
+            is_primary,
             main_categories (
+              id,
               name
-            ),
-            is_primary
+            )
           ),
           profiles (
             first_name,
