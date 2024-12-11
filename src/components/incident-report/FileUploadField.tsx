@@ -1,73 +1,33 @@
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Upload, X } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
-import * as z from "zod";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-const ACCEPTED_FILE_TYPES = [
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/gif",
-  "video/mp4",
-  "application/pdf",
-];
-
-export const fileSchema = z
-  .custom<FileList>()
-  .optional()
-  .refine(
-    (files) => {
-      if (!files) return true;
-      return Array.from(files).every((file) => file.size <= MAX_FILE_SIZE);
-    },
-    "Each file must be less than 10MB"
-  )
-  .refine(
-    (files) => {
-      if (!files) return true;
-      return Array.from(files).every((file) =>
-        ACCEPTED_FILE_TYPES.includes(file.type)
-      );
-    },
-    "Only .jpg, .jpeg, .png, .gif, .mp4 and .pdf files are accepted"
-  );
 
 interface FileUploadFieldProps {
   form: UseFormReturn<any>;
 }
 
 export const FileUploadField = ({ form }: FileUploadFieldProps) => {
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      const fileArray = Array.from(files);
-      setSelectedFiles(prev => [...prev, ...fileArray]);
-      
-      // Create a new FileList-like object with all files
-      const dataTransfer = new DataTransfer();
-      [...selectedFiles, ...fileArray].forEach(file => {
-        dataTransfer.items.add(file);
-      });
-      form.setValue("files", dataTransfer.files);
+      form.setValue("files", files);
     }
   };
 
   const handleDeleteFile = (indexToDelete: number) => {
-    const newFiles = selectedFiles.filter((_, index) => index !== indexToDelete);
-    setSelectedFiles(newFiles);
+    const currentFiles = form.getValues("files");
+    if (!currentFiles) return;
 
-    // Update the form value with the new FileList
-    const dataTransfer = new DataTransfer();
-    newFiles.forEach(file => {
-      dataTransfer.items.add(file);
-    });
-    form.setValue("files", dataTransfer.files.length > 0 ? dataTransfer.files : undefined);
+    const dt = new DataTransfer();
+    Array.from(currentFiles)
+      .filter((_, index) => index !== indexToDelete)
+      .forEach(file => dt.items.add(file));
+
+    form.setValue("files", dt.files);
   };
+
+  const files = form.watch("files");
 
   return (
     <FormField
@@ -98,16 +58,15 @@ export const FileUploadField = ({ form }: FileUploadFieldProps) => {
                     type="file"
                     className="hidden"
                     multiple
-                    accept={ACCEPTED_FILE_TYPES.join(",")}
                     onChange={handleFileChange}
                   />
                 </label>
               </div>
-              {selectedFiles.length > 0 && (
+              {files && files.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-sm font-medium">Selected files:</p>
                   <ul className="space-y-2">
-                    {selectedFiles.map((file, index) => (
+                    {Array.from(files).map((file, index) => (
                       <li key={index} className="flex items-center justify-between text-sm text-gray-500 bg-gray-50 dark:bg-gray-800 p-2 rounded">
                         <span className="truncate">{file.name}</span>
                         <Button
