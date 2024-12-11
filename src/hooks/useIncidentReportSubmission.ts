@@ -3,7 +3,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./use-toast";
 import { uploadFileToStorage } from "@/utils/fileUpload";
-import { createReport, updateReport, saveEvidence } from "@/services/reportService";
 
 export const useIncidentReportSubmission = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,7 +29,6 @@ export const useIncidentReportSubmission = () => {
       const reportData = {
         title: values.title,
         description: values.description,
-        category_id: values.category_id,
         incident_date: values.incident_date || null,
         incident_time: values.incident_time || null,
         location: values.location || null,
@@ -38,17 +36,58 @@ export const useIncidentReportSubmission = () => {
       };
 
       // Create or update report
-      const reportResult = id 
-        ? await updateReport(id, reportData)
-        : await createReport(reportData);
+      const { data: report, error: reportError } = id
+        ? await supabase
+            .from("reports")
+            .update(reportData)
+            .eq("id", id)
+            .select()
+            .single()
+        : await supabase
+            .from("reports")
+            .insert(reportData)
+            .select()
+            .single();
+
+      if (reportError) throw reportError;
+
+      // Handle category assignments
+      if (id) {
+        // Delete existing assignments
+        await supabase
+          .from("report_category_assignments")
+          .delete()
+          .eq("report_id", id);
+      }
+
+      // Insert primary category
+      await supabase.from("report_category_assignments").insert({
+        report_id: report.id,
+        category_id: values.primary_category_id,
+        is_primary: true,
+      });
+
+      // Insert secondary categories
+      if (values.secondary_categories?.length > 0) {
+        const secondaryAssignments = values.secondary_categories.map(
+          (categoryId: string) => ({
+            report_id: report.id,
+            category_id: categoryId,
+            is_primary: false,
+          })
+        );
+        await supabase
+          .from("report_category_assignments")
+          .insert(secondaryAssignments);
+      }
 
       // Handle evidence uploads if there are any files
       if (uploadedFiles.length > 0) {
-        const evidenceData = uploadedFiles.map(file => ({
+        const evidenceData = uploadedFiles.map((file) => ({
           ...file,
-          report_id: reportResult.id
+          report_id: report.id,
         }));
-        await saveEvidence(evidenceData);
+        await supabase.from("evidence").insert(evidenceData);
       }
 
       toast({
@@ -56,7 +95,7 @@ export const useIncidentReportSubmission = () => {
         description: id ? "Report updated successfully" : "Report submitted successfully",
       });
 
-      navigate('/');
+      navigate("/");
     } catch (error: any) {
       toast({
         title: "Error",

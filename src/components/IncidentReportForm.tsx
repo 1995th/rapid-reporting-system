@@ -8,7 +8,6 @@ import { BasicFields } from "./incident-report/BasicFields";
 import { CategoryField } from "./incident-report/CategoryField";
 import { FileUploadField, fileSchema } from "./incident-report/FileUploadField";
 import { useRoleAuthorization } from "@/hooks/useRoleAuthorization";
-import { useCategories } from "@/hooks/useCategories";
 import { useIncidentReportSubmission } from "@/hooks/useIncidentReportSubmission";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,7 +17,8 @@ import { useEffect } from "react";
 const formSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title is too long"),
   description: z.string().min(1, "Description is required"),
-  category_id: z.string().uuid("Please select a category"),
+  primary_category_id: z.string().uuid("Please select a primary category"),
+  secondary_categories: z.array(z.string().uuid()).optional().default([]),
   incident_date: z.string().optional(),
   incident_time: z.string().optional(),
   location: z.string().optional(),
@@ -29,7 +29,6 @@ const IncidentReportForm = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { data: userProfile } = useRoleAuthorization();
-  const { data: categories } = useCategories();
   const { handleSubmit: submitReport, isSubmitting } = useIncidentReportSubmission();
 
   // Fetch existing report data if editing
@@ -37,27 +36,44 @@ const IncidentReportForm = () => {
     queryKey: ["report", id],
     queryFn: async () => {
       if (!id) return null;
-      const { data, error } = await supabase
+      
+      // Fetch report details
+      const { data: report, error: reportError } = await supabase
         .from("reports")
-        .select("*")
+        .select("*, report_category_assignments(*)")
         .eq("id", id)
         .single();
       
-      if (error) throw error;
-      return data;
+      if (reportError) throw reportError;
+      
+      // Transform category assignments
+      const primaryCategory = report.report_category_assignments.find(
+        (assignment: any) => assignment.is_primary
+      );
+      
+      const secondaryCategories = report.report_category_assignments
+        .filter((assignment: any) => !assignment.is_primary)
+        .map((assignment: any) => assignment.category_id);
+
+      return {
+        ...report,
+        primary_category_id: primaryCategory?.category_id,
+        secondary_categories: secondaryCategories,
+      };
     },
-    enabled: !!id, // Only run query if we have an ID
+    enabled: !!id,
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: existingReport?.title || "",
-      description: existingReport?.description || "",
-      category_id: existingReport?.category_id || "",
-      incident_date: existingReport?.incident_date || "",
-      incident_time: existingReport?.incident_time || "",
-      location: existingReport?.location || "",
+      title: "",
+      description: "",
+      primary_category_id: "",
+      secondary_categories: [],
+      incident_date: "",
+      incident_time: "",
+      location: "",
     },
   });
 
@@ -67,11 +83,12 @@ const IncidentReportForm = () => {
       form.reset({
         title: existingReport.title,
         description: existingReport.description,
-        category_id: existingReport.category_id,
+        primary_category_id: existingReport.primary_category_id,
+        secondary_categories: existingReport.secondary_categories,
         incident_date: existingReport.incident_date || "",
         incident_time: existingReport.incident_time || "",
         location: existingReport.location || "",
-        files: undefined, // Set to undefined instead of empty array for FileList type
+        files: undefined,
       });
     }
   }, [existingReport, form]);
@@ -105,7 +122,7 @@ const IncidentReportForm = () => {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(submitReport)} className="space-y-6">
           <BasicFields form={form} />
-          {categories && <CategoryField form={form} categories={categories} />}
+          <CategoryField form={form} />
           <FileUploadField form={form} />
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting ? "Submitting..." : (id ? "Update Report" : "Submit Report")}

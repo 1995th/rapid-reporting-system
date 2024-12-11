@@ -8,42 +8,109 @@ import {
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useCategoryGroups } from "@/hooks/useCategoryGroups";
 import { UseFormReturn } from "react-hook-form";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface CategoryFieldProps {
   form: UseFormReturn<any>;
-  categories: Array<{ id: string; name: string }>;
 }
 
-export const CategoryField = ({ form, categories }: CategoryFieldProps) => {
+export const CategoryField = ({ form }: CategoryFieldProps) => {
+  const { data, isLoading } = useCategoryGroups();
+
+  if (isLoading) return null;
+
   return (
-    <FormField
-      control={form.control}
-      name="category_id"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Category</FormLabel>
-          <Select onValueChange={field.onChange} defaultValue={field.value}>
-            <FormControl>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a category" />
-              </SelectTrigger>
-            </FormControl>
-            <SelectContent>
-              {categories?.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.name}
-                </SelectItem>
+    <div className="space-y-4">
+      <FormField
+        control={form.control}
+        name="primary_category_id"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Primary Category</FormLabel>
+            <Select onValueChange={field.onChange} value={field.value}>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select primary category" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                <ScrollArea className="h-80">
+                  {data?.groups.map((group) => (
+                    <SelectGroup key={group.id}>
+                      <SelectLabel>{group.name}</SelectLabel>
+                      {data.categories[group.id]?.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ))}
+                </ScrollArea>
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="secondary_categories"
+        render={() => (
+          <FormItem>
+            <FormLabel>Secondary Categories (Optional)</FormLabel>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border rounded-lg p-4">
+              {data?.groups.map((group) => (
+                <div key={group.id} className="space-y-2">
+                  <h4 className="font-medium text-sm">{group.name}</h4>
+                  <div className="space-y-1">
+                    {data.categories[group.id]?.map((category) => (
+                      <FormField
+                        key={category.id}
+                        control={form.control}
+                        name="secondary_categories"
+                        render={({ field }) => {
+                          const isSelected = field.value?.includes(category.id);
+                          const isPrimary = form.watch("primary_category_id") === category.id;
+
+                          return (
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                checked={isSelected}
+                                disabled={isPrimary}
+                                onCheckedChange={(checked) => {
+                                  const currentValue = field.value || [];
+                                  const newValue = checked
+                                    ? [...currentValue, category.id]
+                                    : currentValue.filter((id: string) => id !== category.id);
+                                  field.onChange(newValue);
+                                }}
+                              />
+                              <label className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                {category.name}
+                              </label>
+                            </div>
+                          );
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
               ))}
-            </SelectContent>
-          </Select>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
+            </div>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </div>
   );
 };

@@ -13,6 +13,7 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
+          group_id: string | null
           id: string
           name: string
           updated_at: string
@@ -20,6 +21,7 @@ export type Database = {
         Insert: {
           created_at?: string
           description?: string | null
+          group_id?: string | null
           id?: string
           name: string
           updated_at?: string
@@ -27,11 +29,20 @@ export type Database = {
         Update: {
           created_at?: string
           description?: string | null
+          group_id?: string | null
           id?: string
           name?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "case_categories_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "report_category_groups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       evidence: {
         Row: {
@@ -107,6 +118,66 @@ export type Database = {
           last_name?: string | null
           phone_number?: string | null
           role?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      report_category_assignments: {
+        Row: {
+          category_id: string
+          created_at: string
+          is_primary: boolean
+          report_id: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          is_primary?: boolean
+          report_id: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          is_primary?: boolean
+          report_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_category_assignments_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "case_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_category_assignments_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      report_category_groups: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
           updated_at?: string
         }
         Relationships: []
