@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/layout/Navbar";
 import Index from "./pages/Index";
 import AuthPage from "./pages/Auth";
@@ -9,10 +9,13 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ReportDetail from "./pages/ReportDetail";
 
 const AppRoutes = () => {
+  const location = useLocation();
+  const isAuthPage = location.pathname === '/auth';
+
   return (
     <>
-      <Navbar />
-      <main className="container mx-auto px-4 py-6">
+      {!isAuthPage && <Navbar />}
+      <main className={`container mx-auto px-4 ${isAuthPage ? '' : 'py-6'}`}>
         <Routes>
           <Route path="/auth" element={<AuthPage />} />
           <Route
