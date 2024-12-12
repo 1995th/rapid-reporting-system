@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import Navbar from "./components/layout/Navbar";
 import Landing from "./pages/Landing";
 import Index from "./pages/Index";
@@ -68,6 +68,8 @@ const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
+          {/* Redirect /index to /dashboard */}
+          <Route path="/index" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </main>
     </>
