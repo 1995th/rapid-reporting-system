@@ -2,6 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ReportFormSchema } from "@/lib/validations/report";
 import { useToast } from "@/hooks/use-toast";
+import { updateCategoryAssignments } from "@/utils/categoryUtils";
 
 export const useReportSubmission = (id?: string) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,7 +20,7 @@ export const useReportSubmission = (id?: string) => {
           description: "You must be logged in to submit a report",
           variant: "destructive",
         });
-        return;
+        return false;
       }
 
       // Handle file uploads if present
@@ -64,7 +65,6 @@ export const useReportSubmission = (id?: string) => {
             description: data.description,
             incident_date: data.incident_date.toISOString(),
             incident_time: data.incident_time || null,
-            main_category_id: data.main_category_id || null,
             updated_at: new Date().toISOString(),
           })
           .eq("id", id);
@@ -77,28 +77,7 @@ export const useReportSubmission = (id?: string) => {
         // Update category assignments
         if (data.categories?.length) {
           console.log("Updating category assignments...");
-          // First delete existing assignments
-          await supabase
-            .from("report_category_assignments")
-            .delete()
-            .eq("report_id", id);
-
-          // Then insert new ones
-          const { error: categoryError } = await supabase
-            .from("report_category_assignments")
-            .insert(
-              data.categories.map(subcategoryId => ({
-                report_id: id,
-                subcategory_id: subcategoryId,
-                main_category_id: data.main_category_id || null,
-                is_primary: false,
-              }))
-            );
-
-          if (categoryError) {
-            console.error("Error updating categories:", categoryError);
-            throw categoryError;
-          }
+          await updateCategoryAssignments(id, data.categories);
         }
 
         // Add new evidence if files were uploaded
@@ -133,7 +112,6 @@ export const useReportSubmission = (id?: string) => {
             description: data.description,
             incident_date: data.incident_date.toISOString(),
             incident_time: data.incident_time || null,
-            main_category_id: data.main_category_id || null,
             user_id: user.id,
           })
           .select()
@@ -144,26 +122,10 @@ export const useReportSubmission = (id?: string) => {
           throw insertError;
         }
 
-        console.log("New report created:", reportData);
-
         // Insert category assignments
         if (data.categories?.length && reportData) {
           console.log("Adding category assignments...");
-          const { error: categoryError } = await supabase
-            .from("report_category_assignments")
-            .insert(
-              data.categories.map(subcategoryId => ({
-                report_id: reportData.id,
-                subcategory_id: subcategoryId,
-                main_category_id: data.main_category_id || null,
-                is_primary: false,
-              }))
-            );
-
-          if (categoryError) {
-            console.error("Error adding categories:", categoryError);
-            throw categoryError;
-          }
+          await updateCategoryAssignments(reportData.id, data.categories);
         }
 
         // Insert evidence if files were uploaded
