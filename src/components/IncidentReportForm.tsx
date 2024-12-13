@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,10 +16,13 @@ import { FileUploadField } from "./incident-report/FileUploadField";
 import { useIncidentReportSubmission } from "@/hooks/useIncidentReportSubmission";
 import { ReportFormSchema, reportFormSchema } from "@/lib/validations/report";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const IncidentReportForm = () => {
   const { id } = useParams();
-  const { handleSubmit, isSubmitting } = useIncidentReportSubmission(id);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { handleSubmit: handleReportSubmit, isSubmitting } = useIncidentReportSubmission(id);
 
   const form = useForm<ReportFormSchema>({
     resolver: zodResolver(reportFormSchema),
@@ -52,6 +55,11 @@ const IncidentReportForm = () => {
 
       if (reportError) {
         console.error("Error fetching report:", reportError);
+        toast({
+          title: "Error",
+          description: "Failed to fetch report data",
+          variant: "destructive",
+        });
         throw reportError;
       }
 
@@ -81,6 +89,25 @@ const IncidentReportForm = () => {
     }
   }, [report, form]);
 
+  const onSubmit = async (data: ReportFormSchema) => {
+    console.log("Form submitted with data:", data);
+    try {
+      await handleReportSubmit(data);
+      toast({
+        title: id ? "Report Updated" : "Report Submitted",
+        description: id ? "Your report has been updated successfully" : "Your report has been submitted successfully",
+      });
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to submit report",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
@@ -105,7 +132,7 @@ const IncidentReportForm = () => {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <TitleField form={form} />
             <DescriptionField form={form} />
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

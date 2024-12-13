@@ -1,19 +1,15 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { ReportFormSchema } from "@/lib/validations/report";
 import { uploadFileToStorage } from "@/utils/fileUpload";
 
 export const useIncidentReportSubmission = (id?: string) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const navigate = useNavigate();
-  const { toast } = useToast();
 
   const handleSubmit = async (data: ReportFormSchema) => {
     try {
       setIsSubmitting(true);
-      console.log("Submitting form data:", data);
+      console.log("Starting form submission with data:", data);
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("No user found");
@@ -21,11 +17,13 @@ export const useIncidentReportSubmission = (id?: string) => {
       // Handle file uploads if files are present
       let evidenceData = [];
       if (data.files?.length) {
+        console.log("Uploading files...");
         const files = Array.from(data.files);
         const uploadPromises = files.map(file => 
           uploadFileToStorage(file, user.id)
         );
         evidenceData = await Promise.all(uploadPromises);
+        console.log("Files uploaded:", evidenceData);
       }
 
       if (id) {
@@ -43,10 +41,14 @@ export const useIncidentReportSubmission = (id?: string) => {
           })
           .eq("id", id);
 
-        if (updateError) throw updateError;
+        if (updateError) {
+          console.error("Error updating report:", updateError);
+          throw updateError;
+        }
 
         // Update category assignments
         if (data.categories?.length) {
+          console.log("Updating category assignments...");
           // Delete existing assignments
           await supabase
             .from("report_category_assignments")
@@ -65,11 +67,15 @@ export const useIncidentReportSubmission = (id?: string) => {
               }))
             );
 
-          if (categoryError) throw categoryError;
+          if (categoryError) {
+            console.error("Error updating categories:", categoryError);
+            throw categoryError;
+          }
         }
 
         // Insert new evidence if files were uploaded
         if (evidenceData.length > 0) {
+          console.log("Adding new evidence...");
           const { error: evidenceError } = await supabase
             .from("evidence")
             .insert(
@@ -80,13 +86,11 @@ export const useIncidentReportSubmission = (id?: string) => {
               }))
             );
 
-          if (evidenceError) throw evidenceError;
+          if (evidenceError) {
+            console.error("Error adding evidence:", evidenceError);
+            throw evidenceError;
+          }
         }
-
-        toast({
-          title: "Report updated",
-          description: "Your report has been updated successfully.",
-        });
       } else {
         console.log("Creating new report");
         // Create new report
@@ -103,10 +107,16 @@ export const useIncidentReportSubmission = (id?: string) => {
           .select()
           .single();
 
-        if (insertError) throw insertError;
+        if (insertError) {
+          console.error("Error creating report:", insertError);
+          throw insertError;
+        }
+
+        console.log("New report created:", reportData);
 
         // Insert category assignments
         if (data.categories?.length) {
+          console.log("Adding category assignments...");
           const { error: categoryError } = await supabase
             .from("report_category_assignments")
             .insert(
@@ -118,11 +128,15 @@ export const useIncidentReportSubmission = (id?: string) => {
               }))
             );
 
-          if (categoryError) throw categoryError;
+          if (categoryError) {
+            console.error("Error adding categories:", categoryError);
+            throw categoryError;
+          }
         }
 
         // Insert evidence if files were uploaded
         if (evidenceData.length > 0) {
+          console.log("Adding evidence...");
           const { error: evidenceError } = await supabase
             .from("evidence")
             .insert(
@@ -133,23 +147,17 @@ export const useIncidentReportSubmission = (id?: string) => {
               }))
             );
 
-          if (evidenceError) throw evidenceError;
+          if (evidenceError) {
+            console.error("Error adding evidence:", evidenceError);
+            throw evidenceError;
+          }
         }
-
-        toast({
-          title: "Report submitted",
-          description: "Your report has been submitted successfully.",
-        });
       }
 
-      navigate("/dashboard");
+      console.log("Form submission completed successfully");
     } catch (error) {
-      console.error("Error submitting report:", error);
-      toast({
-        title: "Error",
-        description: "There was an error submitting your report. Please try again.",
-        variant: "destructive",
-      });
+      console.error("Error in form submission:", error);
+      throw error;
     } finally {
       setIsSubmitting(false);
     }
