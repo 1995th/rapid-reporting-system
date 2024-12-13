@@ -47,10 +47,14 @@ export const ReportMetadata = ({ status, reporter, incidentDate, incidentTime }:
         <p>{officerName}</p>
       </div>
       <div>
+        <h3 className="font-semibold text-sm text-muted-foreground">Location</h3>
+        <p>{location}</p>
+      </div>
+      <div>
         <h3 className="font-semibold text-sm text-muted-foreground">Date & Time</h3>
         <p>
           {incidentDate ? format(new Date(incidentDate), "MMM d, yyyy") : "N/A"}
-          {incidentTime ? formatTime(incidentTime) : ''}
+          {incidentTime ? formatTime(incidentTime) : ''
         </p>
       </div>
     </>
