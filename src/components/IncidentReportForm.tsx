@@ -19,7 +19,7 @@ import { Loader2 } from "lucide-react";
 
 const IncidentReportForm = () => {
   const { id } = useParams();
-  const { handleSubmit: handleReportSubmit, isSubmitting } = useIncidentReportSubmission(id);
+  const { handleSubmit, isSubmitting } = useIncidentReportSubmission(id);
 
   const form = useForm<ReportFormSchema>({
     resolver: zodResolver(reportFormSchema),
@@ -81,11 +81,6 @@ const IncidentReportForm = () => {
     }
   }, [report, form]);
 
-  const onSubmit = async (data: ReportFormSchema) => {
-    console.log("Form submitted with data:", data);
-    await handleReportSubmit(data);
-  };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
@@ -110,7 +105,7 @@ const IncidentReportForm = () => {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <TitleField form={form} />
             <DescriptionField form={form} />
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
