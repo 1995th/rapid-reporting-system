@@ -37,7 +37,7 @@ export const ReportsList = ({ reports }: ReportsListProps) => {
             <div className="space-y-1">
               <h3 className="font-medium">{report.title}</h3>
               <p className="text-sm text-muted-foreground">
-                Primary Category: {report.report_category_assignments[0]?.main_categories?.name}
+                Primary Category: {getPrimaryCategory(report)}
               </p>
               <p className="text-sm text-muted-foreground">
                 {report.incident_date
