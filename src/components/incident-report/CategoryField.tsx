@@ -68,11 +68,11 @@ export const CategoryField = ({ form }: CategoryFieldProps) => {
       name="categories"
       render={() => (
         <FormItem>
-          <FormLabel>Categories</FormLabel>
+          <FormLabel>Charges</FormLabel>
           <FormControl>
             <Collapsible open={isOpen} onOpenChange={setIsOpen} className="space-y-2">
               <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border p-4 font-medium hover:bg-muted">
-                Select Categories
+                Select Charges
                 <ChevronDown
                   className={`h-4 w-4 transition-transform duration-200 ${
                     isOpen ? "rotate-180" : ""
