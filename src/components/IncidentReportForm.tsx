@@ -125,6 +125,7 @@ const IncidentReportForm = () => {
             <TitleField form={form} />
             <DescriptionField form={form} />
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <LocationField form={form} />
               <DateField form={form} />
               <TimeField form={form} />
             </div>
