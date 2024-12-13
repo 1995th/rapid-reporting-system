@@ -23,6 +23,18 @@ export const useReportSubmission = (id?: string) => {
         return false;
       }
 
+      // If updating an existing report, check its current status
+      let shouldResetStatus = false;
+      if (id) {
+        const { data: existingReport } = await supabase
+          .from("reports")
+          .select("status")
+          .eq("id", id)
+          .single();
+        
+        shouldResetStatus = existingReport?.status === 'approved' || existingReport?.status === 'rejected';
+      }
+
       // Handle file uploads if present
       let evidenceData = [];
       if (data.files?.length) {
@@ -66,6 +78,8 @@ export const useReportSubmission = (id?: string) => {
             incident_date: data.incident_date.toISOString(),
             incident_time: data.incident_time || null,
             updated_at: new Date().toISOString(),
+            // Reset status to pending if the report was approved/rejected
+            ...(shouldResetStatus && { status: 'pending' })
           })
           .eq("id", id);
 
