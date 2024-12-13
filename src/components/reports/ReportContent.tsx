@@ -59,6 +59,7 @@ export const ReportContent = ({ report }: ReportContentProps) => {
           <ReportMetadata
             status={report.status}
             reporter={report.profiles}
+            location={report.location}
             incidentDate={report.incident_date}
             incidentTime={report.incident_time}
           />
