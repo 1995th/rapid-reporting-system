@@ -8,6 +8,7 @@ export const reportFormSchema = z.object({
     required_error: "Incident date is required",
   }),
   incident_time: z.string().optional(),
+  location: z.string().optional(),
   main_category_id: z.string().optional(),
   categories: z.array(z.string()).optional(),
   files: fileSchema,

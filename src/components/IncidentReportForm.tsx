@@ -12,6 +12,7 @@ import { DescriptionField } from "./incident-report/DescriptionField";
 import { DateField } from "./incident-report/DateField";
 import { TimeField } from "./incident-report/TimeField";
 import { CategoryField } from "./incident-report/CategoryField";
+import { LocationField } from "./incident-report/LocationField";
 import { FileUploadField } from "./incident-report/FileUploadField";
 import { ReportFormSchema, reportFormSchema } from "@/lib/validations/report";
 import { Loader2 } from "lucide-react";
@@ -31,6 +32,7 @@ const IncidentReportForm = () => {
       description: "",
       incident_date: new Date(),
       incident_time: "",
+      location: "",
       main_category_id: "",
       categories: [],
       files: undefined,
@@ -83,6 +85,7 @@ const IncidentReportForm = () => {
         description: report.description,
         incident_date: new Date(report.incident_date),
         incident_time: report.incident_time || "",
+        location: report.location || "",
         main_category_id: report.main_category_id || "",
         categories: report.categories || [],
       });
