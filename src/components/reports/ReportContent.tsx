@@ -16,6 +16,7 @@ interface ReportContentProps {
     incident_date: string;
     incident_time: string | null;
     description: string;
+    location: string | null;
   };
 }
 
