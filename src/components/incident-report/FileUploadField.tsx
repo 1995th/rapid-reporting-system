@@ -44,7 +44,7 @@ export const FileUploadField = ({ form }: FileUploadFieldProps) => {
       name="files"
       render={({ field: { onChange, ...field } }) => (
         <FormItem>
-          <FormLabel>Attachments (Optional)</FormLabel>
+          <FormLabel>Evidence Upload</FormLabel>
           <FormControl>
             <div className="flex items-center justify-center w-full">
               <label
