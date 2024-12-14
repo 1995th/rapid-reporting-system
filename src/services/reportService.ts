@@ -34,10 +34,26 @@ export const updateReport = async (id: string, reportData: ReportData) => {
   return data;
 };
 
+interface EvidenceInsert {
+  file_url: string;
+  file_type: string;
+  description: string | null;
+  report_id: string;
+  uploaded_by: string;
+}
+
 export const saveEvidence = async (evidenceData: (UploadedFile & { report_id: string })[]) => {
+  const evidenceToInsert: EvidenceInsert[] = evidenceData.map(evidence => ({
+    file_url: evidence.file_url,
+    file_type: evidence.file_type,
+    description: evidence.description,
+    report_id: evidence.report_id,
+    uploaded_by: evidence.uploaded_by
+  }));
+
   const { error } = await supabase
     .from('evidence')
-    .insert(evidenceData);
+    .insert(evidenceToInsert);
 
   if (error) throw error;
 };
