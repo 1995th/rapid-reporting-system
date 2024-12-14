@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ReportFormSchema } from "@/lib/validations/report";
 import { useToast } from "@/hooks/use-toast";
-import { updateCategoryAssignments } from "@/utils/categoryUtils";
+import { uploadFileToStorage } from "@/utils/fileUpload";
 
 export const useReportSubmission = (id?: string) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,48 +23,26 @@ export const useReportSubmission = (id?: string) => {
         return false;
       }
 
-      // If updating an existing report, check its current status
-      let shouldResetStatus = false;
-      if (id) {
-        const { data: existingReport } = await supabase
-          .from("reports")
-          .select("status")
-          .eq("id", id)
-          .single();
-        
-        shouldResetStatus = existingReport?.status === 'approved' || existingReport?.status === 'rejected';
-      }
-
       // Handle file uploads if present
       let evidenceData = [];
       if (data.files?.length) {
         console.log("Processing file uploads...");
         const files = Array.from(data.files);
         for (const file of files) {
-          const fileExt = file.name.split('.').pop();
-          const fileName = `${crypto.randomUUID()}.${fileExt}`;
-          
-          const { error: uploadError, data: uploadData } = await supabase.storage
-            .from('evidence')
-            .upload(fileName, file);
-
-          if (uploadError) {
-            console.error("File upload error:", uploadError);
-            throw new Error("Failed to upload file");
-          }
-
-          if (uploadData) {
-            const { data: { publicUrl } } = supabase.storage
-              .from('evidence')
-              .getPublicUrl(fileName);
-
-            evidenceData.push({
-              file_url: publicUrl,
-              file_type: file.type,
-              description: file.name,
+          try {
+            const uploadedFile = await uploadFileToStorage(file, user.id);
+            evidenceData.push(uploadedFile);
+          } catch (error) {
+            console.error("File upload error:", error);
+            toast({
+              title: "Error",
+              description: `Failed to upload file: ${file.name}`,
+              variant: "destructive",
             });
+            return false;
           }
         }
+        console.log("Files uploaded successfully:", evidenceData);
       }
 
       if (id) {
@@ -77,21 +55,15 @@ export const useReportSubmission = (id?: string) => {
             description: data.description,
             incident_date: data.incident_date.toISOString(),
             incident_time: data.incident_time || null,
+            location: data.location || null,
+            main_category_id: data.main_category_id || null,
             updated_at: new Date().toISOString(),
-            // Reset status to pending if the report was approved/rejected
-            ...(shouldResetStatus && { status: 'pending' })
           })
           .eq("id", id);
 
         if (updateError) {
           console.error("Error updating report:", updateError);
           throw updateError;
-        }
-
-        // Update category assignments
-        if (data.categories?.length) {
-          console.log("Updating category assignments...");
-          await updateCategoryAssignments(id, data.categories);
         }
 
         // Add new evidence if files were uploaded
@@ -126,6 +98,8 @@ export const useReportSubmission = (id?: string) => {
             description: data.description,
             incident_date: data.incident_date.toISOString(),
             incident_time: data.incident_time || null,
+            location: data.location || null,
+            main_category_id: data.main_category_id || null,
             user_id: user.id,
           })
           .select()
@@ -134,12 +108,6 @@ export const useReportSubmission = (id?: string) => {
         if (insertError) {
           console.error("Error creating report:", insertError);
           throw insertError;
-        }
-
-        // Insert category assignments
-        if (data.categories?.length && reportData) {
-          console.log("Adding category assignments...");
-          await updateCategoryAssignments(reportData.id, data.categories);
         }
 
         // Insert evidence if files were uploaded
