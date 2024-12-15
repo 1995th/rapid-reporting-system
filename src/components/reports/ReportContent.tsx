@@ -91,7 +91,7 @@ export const ReportContent = ({ report }: ReportContentProps) => {
         </div>
         {evidence && evidence.length > 0 && (
           <div>
-            <h3 className="font-semibold text-sm text-muted-foreground mb-2">Attachments</h3>
+            <h3 className="font-semibold text-sm text-muted-foreground mb-2">Evidence</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {evidence.map((item) => (
                 <a
