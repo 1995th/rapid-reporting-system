@@ -128,7 +128,9 @@ const ReportMetrics = () => {
     },
     tooltip: {
       headerFormat: '<b>{point.x}</b><br/>',
-      pointFormat: '{point.y} report' + ('{point.y} === 1' ? '' : 's'),
+      pointFormatter: function(this: Highcharts.Point) {
+        return `${this.y} report${this.y === 1 ? '' : 's'}`;
+      },
       backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
       style: {
         color: isDarkMode ? '#e5e7eb' : '#374151'
