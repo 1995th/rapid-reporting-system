@@ -15,14 +15,16 @@ import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 import { DateRange } from "react-day-picker";
 import { useState } from "react";
 import { format } from "date-fns";
+import { useOrganization } from "@/contexts/OrganizationContext";
 
 const ReportMetrics = () => {
   const { theme } = useTheme();
+  const { organization } = useOrganization();
   const isDarkMode = theme === 'dark';
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
   const { data: reportsByCategory, isLoading: loadingCategories } = useQuery({
-    queryKey: ["reportsByCategory", dateRange],
+    queryKey: ["reportsByCategory", dateRange, organization?.id],
     queryFn: async () => {
       let query = supabase
         .from('reports')
@@ -34,7 +36,8 @@ const ReportMetrics = () => {
               name
             )
           )
-        `);
+        `)
+        .eq('organization_id', organization?.id);
 
       // Apply date range filter if selected
       if (dateRange?.from) {
@@ -56,7 +59,8 @@ const ReportMetrics = () => {
       }, {});
 
       return categoryCounts;
-    }
+    },
+    enabled: !!organization?.id
   });
 
   const chartOptions: Highcharts.Options = {

@@ -11,6 +11,7 @@ import { Report } from "./types";
 import { useNavigate } from "react-router-dom";
 import { StatusBadge } from "./StatusBadge";
 import { ReportActions } from "./ReportActions";
+import { useOrganization } from "@/contexts/OrganizationContext";
 
 interface ReportsTableProps {
   reports: Report[];
@@ -18,13 +19,7 @@ interface ReportsTableProps {
 
 export const ReportsTable = ({ reports }: ReportsTableProps) => {
   const navigate = useNavigate();
-
-  const getPrimaryCategory = (report: Report) => {
-    const primaryAssignment = report.report_category_assignments?.find(
-      (assignment) => assignment.is_primary
-    );
-    return primaryAssignment?.main_categories?.name || "Uncategorized";
-  };
+  const { isAdmin } = useOrganization();
 
   return (
     <div className="overflow-x-auto rounded-md border" role="region" aria-label="Reports table">
@@ -36,7 +31,7 @@ export const ReportsTable = ({ reports }: ReportsTableProps) => {
             <TableHead scope="col">Status</TableHead>
             <TableHead className="hidden sm:table-cell" scope="col">Officer</TableHead>
             <TableHead className="hidden lg:table-cell" scope="col">Date</TableHead>
-            <TableHead className="text-right" scope="col">Actions</TableHead>
+            {isAdmin && <TableHead className="text-right" scope="col">Actions</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -71,9 +66,11 @@ export const ReportsTable = ({ reports }: ReportsTableProps) => {
                   ? format(new Date(report.incident_date), "MMM d, yyyy")
                   : "N/A"}
               </TableCell>
-              <TableCell className="text-right">
-                <ReportActions reportId={report.id} />
-              </TableCell>
+              {isAdmin && (
+                <TableCell className="text-right">
+                  <ReportActions reportId={report.id} />
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>
