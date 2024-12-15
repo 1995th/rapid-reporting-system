@@ -11,15 +11,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import { useTheme } from "@/contexts/ThemeContext";
+import { DatePickerWithRange } from "@/components/ui/date-range-picker";
+import { DateRange } from "react-day-picker";
+import { useState } from "react";
+import { format } from "date-fns";
 
 const ReportMetrics = () => {
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
   const { data: reportsByCategory, isLoading: loadingCategories } = useQuery({
-    queryKey: ["reportsByCategory"],
+    queryKey: ["reportsByCategory", dateRange],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('reports')
         .select(`
           id,
@@ -31,6 +36,15 @@ const ReportMetrics = () => {
           )
         `);
 
+      // Apply date range filter if selected
+      if (dateRange?.from) {
+        query = query.gte('created_at', format(dateRange.from, 'yyyy-MM-dd'));
+      }
+      if (dateRange?.to) {
+        query = query.lte('created_at', format(dateRange.to, 'yyyy-MM-dd'));
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
 
       // Process the data to count reports per category
@@ -91,6 +105,8 @@ const ReportMetrics = () => {
           color: isDarkMode ? '#9ca3af' : '#6b7280'
         }
       },
+      allowDecimals: false,
+      min: 0,
       gridLineColor: isDarkMode ? '#374151' : '#e5e7eb'
     },
     series: [{
@@ -112,7 +128,7 @@ const ReportMetrics = () => {
     },
     tooltip: {
       headerFormat: '<b>{point.x}</b><br/>',
-      pointFormat: '{point.y} reports',
+      pointFormat: '{point.y} report' + ('{point.y} === 1' ? '' : 's'),
       backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
       style: {
         color: isDarkMode ? '#e5e7eb' : '#374151'
@@ -128,8 +144,16 @@ const ReportMetrics = () => {
   return (
     <Card>
       <CardHeader className="pb-4">
-        <CardTitle>Reports by Category</CardTitle>
-        <CardDescription>Distribution of reports across different categories</CardDescription>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <CardTitle>Reports by Category</CardTitle>
+            <CardDescription>Distribution of reports across different categories</CardDescription>
+          </div>
+          <DatePickerWithRange
+            value={dateRange}
+            onChange={setDateRange}
+          />
+        </div>
       </CardHeader>
       <CardContent className="pt-0">
         <div className="w-full">
