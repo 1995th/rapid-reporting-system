@@ -7,6 +7,7 @@ import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { supabase } from "@/integrations/supabase/client";
 import { StrictMode } from "react";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { OrganizationProvider } from "./contexts/OrganizationContext";
 import AppRoutes from "./AppRoutes";
 
 const queryClient = new QueryClient();
@@ -17,13 +18,15 @@ const App = () => (
       <QueryClientProvider client={queryClient}>
         <SessionContextProvider supabaseClient={supabase}>
           <ThemeProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <div className="min-h-screen bg-background">
-                <AppRoutes />
-              </div>
-            </TooltipProvider>
+            <OrganizationProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <div className="min-h-screen bg-background">
+                  <AppRoutes />
+                </div>
+              </TooltipProvider>
+            </OrganizationProvider>
           </ThemeProvider>
         </SessionContextProvider>
       </QueryClientProvider>

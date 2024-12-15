@@ -3,25 +3,47 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { SignInForm } from "@/components/auth/SignInForm";
 import { SignUpForm } from "@/components/auth/SignUpForm";
+import { OrganizationSelect } from "@/components/auth/OrganizationSelect";
 import { Siren } from "lucide-react";
 
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
   const [isSignIn, setIsSignIn] = useState(searchParams.get("mode") !== "signup");
+  const [showOrgSelect, setShowOrgSelect] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate("/dashboard");
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("organization_id")
+          .eq("id", session.user.id)
+          .single();
+
+        if (profile?.organization_id) {
+          navigate("/dashboard");
+        } else {
+          setShowOrgSelect(true);
+        }
       }
     };
     checkUser();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session) {
-        navigate("/dashboard");
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("organization_id")
+          .eq("id", session.user.id)
+          .single();
+
+        if (profile?.organization_id) {
+          navigate("/dashboard");
+        } else {
+          setShowOrgSelect(true);
+        }
       }
     });
 
@@ -43,10 +65,14 @@ const AuthPage = () => {
           </div>
         </div>
         <div className="rounded-lg border bg-card p-6 shadow-sm">
-          {isSignIn ? (
-            <SignInForm onToggle={toggleForm} />
+          {showOrgSelect ? (
+            <OrganizationSelect />
           ) : (
-            <SignUpForm onToggle={toggleForm} />
+            isSignIn ? (
+              <SignInForm onToggle={toggleForm} />
+            ) : (
+              <SignUpForm onToggle={toggleForm} />
+            )
           )}
         </div>
       </div>

@@ -81,12 +81,35 @@ export type Database = {
         }
         Relationships: []
       }
+      organizations: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
           first_name: string | null
           id: string
           last_name: string | null
+          org_role: string
+          organization_id: string | null
           phone_number: string | null
           role: string
           updated_at: string
@@ -96,6 +119,8 @@ export type Database = {
           first_name?: string | null
           id: string
           last_name?: string | null
+          org_role?: string
+          organization_id?: string | null
           phone_number?: string | null
           role?: string
           updated_at?: string
@@ -105,11 +130,21 @@ export type Database = {
           first_name?: string | null
           id?: string
           last_name?: string | null
+          org_role?: string
+          organization_id?: string | null
           phone_number?: string | null
           role?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       report_category_assignments: {
         Row: {
@@ -166,6 +201,7 @@ export type Database = {
           incident_time: string | null
           location: string | null
           main_category_id: string | null
+          organization_id: string | null
           status: string
           title: string
           updated_at: string
@@ -179,6 +215,7 @@ export type Database = {
           incident_time?: string | null
           location?: string | null
           main_category_id?: string | null
+          organization_id?: string | null
           status?: string
           title: string
           updated_at?: string
@@ -192,6 +229,7 @@ export type Database = {
           incident_time?: string | null
           location?: string | null
           main_category_id?: string | null
+          organization_id?: string | null
           status?: string
           title?: string
           updated_at?: string
@@ -203,6 +241,13 @@ export type Database = {
             columns: ["main_category_id"]
             isOneToOne: false
             referencedRelation: "main_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
