@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ReportFormSchema } from "@/lib/validations/report";
 import { useToast } from "@/hooks/use-toast";
 import { uploadFileToStorage } from "@/utils/fileUpload";
+import { saveEvidence } from "@/services/reportService";
 
 export const useReportSubmission = (id?: string) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,7 +32,10 @@ export const useReportSubmission = (id?: string) => {
         for (const file of files) {
           try {
             const uploadedFile = await uploadFileToStorage(file, user.id);
-            evidenceData.push(uploadedFile);
+            evidenceData.push({
+              ...uploadedFile,
+              report_id: id || '', // This will be updated for new reports
+            });
           } catch (error) {
             console.error("File upload error:", error);
             toast({
@@ -68,20 +72,8 @@ export const useReportSubmission = (id?: string) => {
 
         // Add new evidence if files were uploaded
         if (evidenceData.length > 0) {
-          const { error: evidenceError } = await supabase
-            .from("evidence")
-            .insert(
-              evidenceData.map(evidence => ({
-                ...evidence,
-                report_id: id,
-                uploaded_by: user.id,
-              }))
-            );
-
-          if (evidenceError) {
-            console.error("Error adding evidence:", evidenceError);
-            throw evidenceError;
-          }
+          console.log("Adding evidence to existing report:", id);
+          await saveEvidence(evidenceData);
         }
 
         toast({
@@ -112,20 +104,13 @@ export const useReportSubmission = (id?: string) => {
 
         // Insert evidence if files were uploaded
         if (evidenceData.length > 0 && reportData) {
-          const { error: evidenceError } = await supabase
-            .from("evidence")
-            .insert(
-              evidenceData.map(evidence => ({
-                ...evidence,
-                report_id: reportData.id,
-                uploaded_by: user.id,
-              }))
-            );
-
-          if (evidenceError) {
-            console.error("Error adding evidence:", evidenceError);
-            throw evidenceError;
-          }
+          console.log("Adding evidence to new report:", reportData.id);
+          // Update report_id for the evidence since we now have it
+          evidenceData = evidenceData.map(evidence => ({
+            ...evidence,
+            report_id: reportData.id
+          }));
+          await saveEvidence(evidenceData);
         }
 
         toast({

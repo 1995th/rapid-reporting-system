@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CategoryDisplay } from "./CategoryDisplay";
 import { ReportMetadata } from "./ReportMetadata";
+import { FileIcon, ImageIcon, VideoIcon } from "lucide-react";
 
 interface ReportContentProps {
   report: {
@@ -44,6 +45,25 @@ export const ReportContent = ({ report }: ReportContentProps) => {
     },
   });
 
+  const { data: evidence, isLoading: isEvidenceLoading } = useQuery({
+    queryKey: ["report-evidence", report.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("evidence")
+        .select("*")
+        .eq("report_id", report.id);
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const getFileIcon = (fileType: string) => {
+    if (fileType.startsWith('image/')) return <ImageIcon className="h-4 w-4" />;
+    if (fileType.startsWith('video/')) return <VideoIcon className="h-4 w-4" />;
+    return <FileIcon className="h-4 w-4" />;
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -69,6 +89,25 @@ export const ReportContent = ({ report }: ReportContentProps) => {
           <h3 className="font-semibold text-sm text-muted-foreground mb-2">Description</h3>
           <p className="whitespace-pre-wrap">{report.description}</p>
         </div>
+        {evidence && evidence.length > 0 && (
+          <div>
+            <h3 className="font-semibold text-sm text-muted-foreground mb-2">Attachments</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {evidence.map((item) => (
+                <a
+                  key={item.id}
+                  href={item.file_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                >
+                  {getFileIcon(item.file_type)}
+                  <span className="ml-2 text-sm truncate">{item.description}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
