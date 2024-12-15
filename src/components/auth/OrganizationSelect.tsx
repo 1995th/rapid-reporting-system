@@ -121,9 +121,9 @@ export const OrganizationSelect = () => {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>Join or Create Organization</CardTitle>
+        <CardTitle>Join Your Organization</CardTitle>
         <CardDescription>
-          Select an existing organization or create a new one
+          Select an existing organization
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
