@@ -7,6 +7,7 @@ import { SearchFilters } from "./SearchFilters";
 import { ReportsTable } from "./ReportsTable";
 import { ReportPagination } from "./ReportPagination";
 import { useReportData } from "@/hooks/useReportData";
+import { useOrganization } from "@/contexts/OrganizationContext";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -17,6 +18,7 @@ const ReportSearch = () => {
     categoryId: null,
     dateRange: undefined,
   });
+  const { isAdmin } = useOrganization();
 
   const { data: categories = [], isLoading: isCategoriesLoading } = useQuery({
     queryKey: ["categories"],
@@ -53,7 +55,10 @@ const ReportSearch = () => {
             onFiltersChange={setFilters}
           />
 
-          <ReportsTable reports={reportData?.data || []} />
+          <ReportsTable 
+            reports={reportData?.data || []} 
+            showActions={isAdmin}
+          />
 
           <div className="flex justify-center mt-4">
             <ReportPagination
