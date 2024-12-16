@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MemberActions } from "./MemberActions";
+import { User } from "@supabase/supabase-js";
 
 interface Member {
   id: string;
@@ -27,6 +28,10 @@ interface Profile {
   first_name: string | null;
   last_name: string | null;
   org_role: string;
+}
+
+interface AuthResponse {
+  users: User[];
 }
 
 export const OrganizationMembers = () => {
@@ -57,7 +62,7 @@ export const OrganizationMembers = () => {
 
       // Map the profiles with their corresponding email from auth data
       return profiles.map((profile: Profile) => {
-        const authUser = authData.users.find(user => user.id === profile.id);
+        const authUser = (authData as AuthResponse).users.find(user => user.id === profile.id);
         return {
           ...profile,
           email: authUser?.email || "No email found",
