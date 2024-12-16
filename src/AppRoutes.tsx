@@ -5,6 +5,7 @@ import Index from "./pages/Index";
 import AuthPage from "./pages/Auth";
 import Analytics from "./pages/Analytics";
 import Profile from "./pages/Profile";
+import Organization from "./pages/Organization";
 import IncidentReportForm from "./components/IncidentReportForm";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ReportDetail from "./pages/ReportDetail";
@@ -65,6 +66,14 @@ const AppRoutes = () => {
             element={
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/organization"
+            element={
+              <ProtectedRoute>
+                <Organization />
               </ProtectedRoute>
             }
           />
