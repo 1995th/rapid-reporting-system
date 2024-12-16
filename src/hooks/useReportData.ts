@@ -1,64 +1,67 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
-import { SearchFilters } from "@/components/analytics/types";
 
-const ITEMS_PER_PAGE = 10;
+interface ReportFilters {
+  title?: string;
+  categoryId?: string | null;
+  dateRange?: { from: Date; to: Date };
+}
 
-export const useReportData = (filters: SearchFilters, currentPage: number) => {
+export const useReportData = (filters: ReportFilters, page: number) => {
+  const ITEMS_PER_PAGE = 10;
+  
   return useQuery({
-    queryKey: ["reports", filters, currentPage],
+    queryKey: ["reports", filters, page],
     queryFn: async () => {
       let query = supabase
         .from("reports")
         .select(`
           *,
-          report_category_assignments!inner (
-            main_category_id,
-            is_primary,
+          profiles (
+            first_name,
+            last_name
+          ),
+          report_category_assignments (
             main_categories (
               id,
               name
             )
-          ),
-          profiles (
-            first_name,
-            last_name
           )
-        `, { count: 'exact' })
-        .order("created_at", { ascending: false });
+        `, { count: 'exact' });
 
       // Apply filters
       if (filters.title) {
-        query = query.ilike("title", `%${filters.title}%`);
+        query = query.ilike('title', `%${filters.title}%`);
       }
 
       if (filters.categoryId) {
-        query = query.eq("report_category_assignments.main_category_id", filters.categoryId);
+        query = query.eq('main_category_id', filters.categoryId);
       }
 
-      if (filters.dateRange?.from) {
-        query = query.gte(
-          "incident_date",
-          format(filters.dateRange.from, "yyyy-MM-dd")
-        );
+      if (filters.dateRange?.from && filters.dateRange?.to) {
+        query = query
+          .gte('incident_date', filters.dateRange.from.toISOString().split('T')[0])
+          .lte('incident_date', filters.dateRange.to.toISOString().split('T')[0]);
       }
 
-      if (filters.dateRange?.to) {
-        query = query.lte(
-          "incident_date",
-          format(filters.dateRange.to, "yyyy-MM-dd")
-        );
-      }
-
-      // Apply pagination
-      const start = (currentPage - 1) * ITEMS_PER_PAGE;
-      query = query.range(start, start + ITEMS_PER_PAGE - 1);
+      // Add pagination
+      const from = (page - 1) * ITEMS_PER_PAGE;
+      const to = from + ITEMS_PER_PAGE - 1;
+      
+      query = query
+        .order('created_at', { ascending: false })
+        .range(from, to);
 
       const { data, error, count } = await query;
-      if (error) throw error;
 
-      return { data, count };
+      if (error) {
+        throw error;
+      }
+
+      return {
+        data: data || [],
+        count: count || 0
+      };
     },
   });
 };
