@@ -12,9 +12,8 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Get organization ID from query params
-    const url = new URL(req.url)
-    const organizationId = url.searchParams.get('organizationId')
+    // Get organization ID from request body
+    const { organizationId } = await req.json()
 
     if (!organizationId) {
       return new Response(

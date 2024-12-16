@@ -31,7 +31,7 @@ export const OrganizationMembers = () => {
       if (!organization?.id) throw new Error("No organization ID");
       
       const { data, error } = await supabase.functions.invoke('get-organization-members', {
-        query: { organizationId: organization.id }
+        body: { organizationId: organization.id }
       });
       
       if (error) throw error;
