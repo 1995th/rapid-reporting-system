@@ -22,47 +22,38 @@ interface Member {
   org_role: string;
 }
 
-interface ProfileWithAuth {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
-  org_role: string;
-  auth_users: {
-    email: string;
-  };
-}
-
 export const OrganizationMembers = () => {
   const { organization, isAdmin } = useOrganization();
 
   const { data: members, isLoading } = useQuery<Member[]>({
     queryKey: ["organization-members", organization?.id],
     queryFn: async () => {
-      const { data: profiles, error } = await supabase
+      // First, get the profiles
+      const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select(`
           id,
           first_name,
           last_name,
-          org_role,
-          auth_users (
-            email
-          )
+          org_role
         `)
         .eq("organization_id", organization?.id);
 
-      if (error) throw error;
+      if (profilesError) throw profilesError;
 
-      // Type assertion to unknown first, then to the correct type
-      const typedProfiles = (profiles as unknown) as ProfileWithAuth[];
+      // Then, get the auth users data for these profiles
+      const { data: authData, error: authError } = await supabase.auth.admin.listUsers();
       
-      return typedProfiles.map((profile) => ({
-        id: profile.id,
-        first_name: profile.first_name,
-        last_name: profile.last_name,
-        org_role: profile.org_role,
-        email: profile.auth_users?.email || "",
-      }));
+      if (authError) throw authError;
+
+      // Map the profiles with their corresponding email from auth data
+      return profiles.map((profile) => {
+        const authUser = authData.users.find(user => user.id === profile.id);
+        return {
+          ...profile,
+          email: authUser?.email || "No email found",
+        };
+      });
     },
     enabled: !!organization?.id,
   });
