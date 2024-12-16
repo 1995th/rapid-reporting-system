@@ -11,8 +11,8 @@ export interface CategoryAssignment {
     id: string;
     name: string;
   };
-  main_category_id: string;
   is_primary: boolean;
+  main_category_id: string;
 }
 
 export interface Report {
@@ -25,12 +25,4 @@ export interface Report {
     first_name: string;
     last_name: string;
   };
-  created_at: string;
-  description: string;
-  incident_time: string | null;
-  location: string | null;
-  main_category_id: string | null;
-  organization_id: string | null;
-  updated_at: string;
-  user_id: string;
 }
