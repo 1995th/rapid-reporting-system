@@ -22,6 +22,13 @@ interface Member {
   org_role: string;
 }
 
+interface Profile {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  org_role: string;
+}
+
 export const OrganizationMembers = () => {
   const { organization, isAdmin } = useOrganization();
 
@@ -41,13 +48,15 @@ export const OrganizationMembers = () => {
 
       if (profilesError) throw profilesError;
 
+      if (!profiles) return [];
+
       // Then, get the auth users data for these profiles
       const { data: authData, error: authError } = await supabase.auth.admin.listUsers();
       
       if (authError) throw authError;
 
       // Map the profiles with their corresponding email from auth data
-      return profiles.map((profile) => {
+      return profiles.map((profile: Profile) => {
         const authUser = authData.users.find(user => user.id === profile.id);
         return {
           ...profile,
