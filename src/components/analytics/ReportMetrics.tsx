@@ -8,14 +8,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import Highcharts from 'highcharts';
-import HighchartsReact from 'highcharts-react-official';
 import { useTheme } from "@/contexts/ThemeContext";
-import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 import { DateRange } from "react-day-picker";
 import { useState } from "react";
 import { format } from "date-fns";
 import { useOrganization } from "@/contexts/OrganizationContext";
+import { DateRangeFilter } from "./metrics/DateRangeFilter";
+import { CategoryChart } from "./metrics/CategoryChart";
 
 const ReportMetrics = () => {
   const { theme } = useTheme();
@@ -39,7 +38,6 @@ const ReportMetrics = () => {
         `)
         .eq('organization_id', organization?.id);
 
-      // Apply date range filter if selected
       if (dateRange?.from) {
         query = query.gte('created_at', format(dateRange.from, 'yyyy-MM-dd'));
       }
@@ -50,7 +48,6 @@ const ReportMetrics = () => {
       const { data, error } = await query;
       if (error) throw error;
 
-      // Process the data to count reports per category
       const categoryCounts = data.reduce((acc: { [key: string]: number }, report) => {
         const primaryAssignment = report.report_category_assignments?.[0];
         const categoryName = primaryAssignment?.main_categories?.name || 'Uncategorized';
@@ -62,86 +59,6 @@ const ReportMetrics = () => {
     },
     enabled: !!organization?.id
   });
-
-  const chartOptions: Highcharts.Options = {
-    chart: {
-      type: 'column',
-      style: {
-        fontFamily: 'inherit'
-      },
-      height: 250,
-      spacingTop: 10,
-      spacingBottom: 10,
-      spacingLeft: 10,
-      spacingRight: 10,
-      backgroundColor: 'transparent',
-    },
-    title: {
-      text: undefined
-    },
-    xAxis: {
-      categories: reportsByCategory ? Object.keys(reportsByCategory) : [],
-      title: {
-        text: 'Categories',
-        style: {
-          color: isDarkMode ? '#e5e7eb' : '#374151'
-        }
-      },
-      labels: {
-        style: {
-          fontSize: '12px',
-          color: isDarkMode ? '#9ca3af' : '#6b7280'
-        }
-      },
-      lineColor: isDarkMode ? '#374151' : '#e5e7eb',
-      tickColor: isDarkMode ? '#374151' : '#e5e7eb'
-    },
-    yAxis: {
-      title: {
-        text: 'Number of Reports',
-        style: {
-          color: isDarkMode ? '#e5e7eb' : '#374151'
-        }
-      },
-      labels: {
-        style: {
-          fontSize: '12px',
-          color: isDarkMode ? '#9ca3af' : '#6b7280'
-        }
-      },
-      allowDecimals: false,
-      min: 0,
-      gridLineColor: isDarkMode ? '#374151' : '#e5e7eb'
-    },
-    series: [{
-      name: 'Reports',
-      type: 'column',
-      data: reportsByCategory ? Object.values(reportsByCategory) : [],
-      color: isDarkMode ? '#60a5fa' : '#3b82f6'
-    }],
-    credits: {
-      enabled: false
-    },
-    legend: {
-      enabled: false
-    },
-    plotOptions: {
-      column: {
-        borderRadius: 4
-      }
-    },
-    tooltip: {
-      headerFormat: '<b>{point.x}</b><br/>',
-      pointFormatter: function(this: Highcharts.Point) {
-        return `${this.y} report${this.y === 1 ? '' : 's'}`;
-      },
-      backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
-      style: {
-        color: isDarkMode ? '#e5e7eb' : '#374151'
-      },
-      borderColor: isDarkMode ? '#374151' : '#e5e7eb'
-    }
-  };
 
   if (loadingCategories) {
     return <Skeleton className="w-full h-[300px]" />;
@@ -155,19 +72,19 @@ const ReportMetrics = () => {
             <CardTitle>Reports by Category</CardTitle>
             <CardDescription>Distribution of reports across different categories</CardDescription>
           </div>
-          <DatePickerWithRange
+          <DateRangeFilter
             value={dateRange}
             onChange={setDateRange}
           />
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="w-full">
-          <HighchartsReact
-            highcharts={Highcharts}
-            options={chartOptions}
+        {reportsByCategory && (
+          <CategoryChart
+            data={reportsByCategory}
+            isDarkMode={isDarkMode}
           />
-        </div>
+        )}
       </CardContent>
     </Card>
   );
