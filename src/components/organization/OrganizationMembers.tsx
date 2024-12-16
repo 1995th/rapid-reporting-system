@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MemberActions } from "./MemberActions";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Member {
   id: string;
@@ -20,12 +21,14 @@ interface Member {
   last_name: string | null;
   email: string;
   org_role: string;
+  status: string;
 }
 
 export const OrganizationMembers = () => {
   const { organization, isAdmin } = useOrganization();
+  const { toast } = useToast();
 
-  const { data: members, isLoading } = useQuery<Member[]>({
+  const { data: members, isLoading, refetch } = useQuery<Member[]>({
     queryKey: ["organization-members", organization?.id],
     queryFn: async () => {
       if (!organization?.id) throw new Error("No organization ID");
@@ -40,6 +43,28 @@ export const OrganizationMembers = () => {
     enabled: !!organization?.id,
   });
 
+  const handleApprove = async (memberId: string) => {
+    const { error } = await supabase
+      .from("profiles")
+      .update({ status: "approved" })
+      .eq("id", memberId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to approve member",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Success",
+      description: "Member approved successfully",
+    });
+    refetch();
+  };
+
   if (isLoading) {
     return <Skeleton className="h-[400px] w-full" />;
   }
@@ -53,6 +78,7 @@ export const OrganizationMembers = () => {
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Role</TableHead>
+              <TableHead>Status</TableHead>
               {isAdmin && <TableHead className="text-right">Actions</TableHead>}
             </TableRow>
           </TableHeader>
@@ -72,9 +98,19 @@ export const OrganizationMembers = () => {
                     {member.org_role}
                   </Badge>
                 </TableCell>
+                <TableCell>
+                  <Badge
+                    variant={member.status === "approved" ? "success" : "warning"}
+                  >
+                    {member.status}
+                  </Badge>
+                </TableCell>
                 {isAdmin && (
                   <TableCell className="text-right">
-                    <MemberActions member={member} />
+                    <MemberActions 
+                      member={member} 
+                      onApprove={() => handleApprove(member.id)}
+                    />
                   </TableCell>
                 )}
               </TableRow>
