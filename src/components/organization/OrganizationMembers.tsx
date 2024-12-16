@@ -29,7 +29,7 @@ interface ProfileWithAuth {
   org_role: string;
   auth_users: {
     email: string;
-  } | null;
+  };
 }
 
 export const OrganizationMembers = () => {
@@ -45,7 +45,7 @@ export const OrganizationMembers = () => {
           first_name,
           last_name,
           org_role,
-          auth_users:id (
+          auth_users (
             email
           )
         `)
@@ -53,8 +53,14 @@ export const OrganizationMembers = () => {
 
       if (error) throw error;
 
-      return (profiles as ProfileWithAuth[]).map((profile) => ({
-        ...profile,
+      // Type assertion to unknown first, then to the correct type
+      const typedProfiles = (profiles as unknown) as ProfileWithAuth[];
+      
+      return typedProfiles.map((profile) => ({
+        id: profile.id,
+        first_name: profile.first_name,
+        last_name: profile.last_name,
+        org_role: profile.org_role,
         email: profile.auth_users?.email || "",
       }));
     },
