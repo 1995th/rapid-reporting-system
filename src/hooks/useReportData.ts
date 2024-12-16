@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Report } from "@/components/analytics/types";
 
 interface ReportFilters {
   title?: string;
@@ -25,7 +26,9 @@ export const useReportData = (filters: ReportFilters, page: number) => {
             main_categories (
               id,
               name
-            )
+            ),
+            main_category_id,
+            is_primary
           )
         `, { count: 'exact' });
 
@@ -55,11 +58,12 @@ export const useReportData = (filters: ReportFilters, page: number) => {
       const { data, error, count } = await query;
 
       if (error) {
+        console.error("Error fetching reports:", error);
         throw error;
       }
 
       return {
-        data: data || [],
+        data: (data as Report[]) || [],
         count: count || 0
       };
     },
