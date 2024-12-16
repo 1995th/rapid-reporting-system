@@ -22,13 +22,23 @@ interface Member {
   org_role: string;
 }
 
+interface ProfileWithAuth {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  org_role: string;
+  auth_users: {
+    email: string;
+  } | null;
+}
+
 export const OrganizationMembers = () => {
   const { organization, isAdmin } = useOrganization();
 
-  const { data: members, isLoading } = useQuery({
+  const { data: members, isLoading } = useQuery<Member[]>({
     queryKey: ["organization-members", organization?.id],
     queryFn: async () => {
-      const { data: members, error } = await supabase
+      const { data: profiles, error } = await supabase
         .from("profiles")
         .select(`
           id,
@@ -43,9 +53,9 @@ export const OrganizationMembers = () => {
 
       if (error) throw error;
 
-      return members.map((member) => ({
-        ...member,
-        email: member.auth_users?.email,
+      return (profiles as ProfileWithAuth[]).map((profile) => ({
+        ...profile,
+        email: profile.auth_users?.email || "",
       }));
     },
     enabled: !!organization?.id,
