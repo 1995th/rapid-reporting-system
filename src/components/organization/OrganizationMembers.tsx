@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MemberActions } from "./MemberActions";
-import { User } from "@supabase/supabase-js";
 
 interface Member {
   id: string;
@@ -23,51 +22,20 @@ interface Member {
   org_role: string;
 }
 
-interface Profile {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
-  org_role: string;
-}
-
-interface AuthResponse {
-  users: User[];
-}
-
 export const OrganizationMembers = () => {
   const { organization, isAdmin } = useOrganization();
 
   const { data: members, isLoading } = useQuery<Member[]>({
     queryKey: ["organization-members", organization?.id],
     queryFn: async () => {
-      // First, get the profiles
-      const { data: profiles, error: profilesError } = await supabase
-        .from("profiles")
-        .select(`
-          id,
-          first_name,
-          last_name,
-          org_role
-        `)
-        .eq("organization_id", organization?.id);
-
-      if (profilesError) throw profilesError;
-
-      if (!profiles) return [];
-
-      // Then, get the auth users data for these profiles
-      const { data: authData, error: authError } = await supabase.auth.admin.listUsers();
+      if (!organization?.id) throw new Error("No organization ID");
       
-      if (authError) throw authError;
-
-      // Map the profiles with their corresponding email from auth data
-      return profiles.map((profile: Profile) => {
-        const authUser = (authData as AuthResponse).users.find(user => user.id === profile.id);
-        return {
-          ...profile,
-          email: authUser?.email || "No email found",
-        };
+      const { data, error } = await supabase.functions.invoke('get-organization-members', {
+        query: { organizationId: organization.id }
       });
+      
+      if (error) throw error;
+      return data;
     },
     enabled: !!organization?.id,
   });
