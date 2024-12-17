@@ -29,6 +29,7 @@ const NavLink = ({
         isActive
           ? "bg-primary text-primary-foreground"
           : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+        !iconOnly && "md:px-6 md:py-2.5", // Added more padding for desktop
         className
       )}
       onClick={onClick}
