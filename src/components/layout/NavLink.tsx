@@ -24,7 +24,7 @@ const NavLink = ({ path, label, icon: Icon, isActive, onClick, className }: NavL
       )}
       onClick={onClick}
     >
-      <Icon className="h-4 w-4 mr-3" />
+      <Icon className="h-4 w-4 mr-2" />
       {label}
     </Link>
   );

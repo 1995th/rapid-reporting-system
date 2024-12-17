@@ -1,5 +1,5 @@
-import { useLocation } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { navItems } from "./NavItems";
 import NavLink from "./NavLink";
 import NavActions from "./NavActions";
@@ -7,7 +7,9 @@ import MobileNav from "./MobileNav";
 import { Siren } from "lucide-react";
 
 const Navbar = () => {
+  const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+
   const isActive = (path: string) => location.pathname === path;
 
   return (
@@ -37,7 +39,11 @@ const Navbar = () => {
           </div>
 
           {/* Mobile Navigation */}
-          <MobileNav isActive={isActive} />
+          <MobileNav
+            isOpen={isOpen}
+            setIsOpen={setIsOpen}
+            isActive={isActive}
+          />
         </div>
       </div>
     </nav>
