@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MemberActions } from "./MemberActions";
-import { useToast } from "@/components/ui/use-toast";
 
 interface Member {
   id: string;
@@ -26,9 +25,8 @@ interface Member {
 
 export const OrganizationMembers = () => {
   const { organization, isAdmin } = useOrganization();
-  const { toast } = useToast();
 
-  const { data: members, isLoading, refetch } = useQuery<Member[]>({
+  const { data: members, isLoading, refetch } = useQuery({
     queryKey: ["organization-members", organization?.id],
     queryFn: async () => {
       if (!organization?.id) throw new Error("No organization ID");
@@ -42,28 +40,6 @@ export const OrganizationMembers = () => {
     },
     enabled: !!organization?.id,
   });
-
-  const handleApprove = async (memberId: string) => {
-    const { error } = await supabase
-      .from("profiles")
-      .update({ status: "approved" })
-      .eq("id", memberId);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to approve member",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    toast({
-      title: "Success",
-      description: "Member approved successfully",
-    });
-    refetch();
-  };
 
   if (isLoading) {
     return <Skeleton className="h-[400px] w-full" />;
@@ -108,8 +84,8 @@ export const OrganizationMembers = () => {
                 {isAdmin && (
                   <TableCell className="text-right">
                     <MemberActions 
-                      member={member} 
-                      onApprove={() => handleApprove(member.id)}
+                      member={member}
+                      onSuccess={refetch}
                     />
                   </TableCell>
                 )}
