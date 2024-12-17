@@ -30,7 +30,7 @@ const Navbar = () => {
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex md:items-center md:space-x-4">
+            <div className="hidden md:flex md:items-center md:space-x-1">
               {navItems.map((item) => (
                 <NavLink
                   key={item.path}
