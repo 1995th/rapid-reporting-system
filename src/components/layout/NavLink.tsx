@@ -9,14 +9,23 @@ interface NavLinkProps {
   isActive: boolean;
   onClick?: () => void;
   className?: string;
+  iconOnly?: boolean;
 }
 
-const NavLink = ({ path, label, icon: Icon, isActive, onClick, className }: NavLinkProps) => {
+const NavLink = ({ 
+  path, 
+  label, 
+  icon: Icon, 
+  isActive, 
+  onClick, 
+  className,
+  iconOnly 
+}: NavLinkProps) => {
   return (
     <Link
       to={path}
       className={cn(
-        "inline-flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors",
+        "inline-flex items-center rounded-md text-sm font-medium transition-colors",
         isActive
           ? "bg-primary text-primary-foreground"
           : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
@@ -24,8 +33,12 @@ const NavLink = ({ path, label, icon: Icon, isActive, onClick, className }: NavL
       )}
       onClick={onClick}
     >
-      <Icon className="h-4 w-4 mr-2" />
-      {label}
+      <Icon className={cn(
+        "h-4 w-4",
+        iconOnly ? "h-5 w-5" : "mr-2"
+      )} />
+      {!iconOnly && label}
+      {iconOnly && <span className="mt-1 text-xs">{label}</span>}
     </Link>
   );
 };

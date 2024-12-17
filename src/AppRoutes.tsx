@@ -17,7 +17,7 @@ const AppRoutes = () => {
   return (
     <>
       {!isPublicPage && <Navbar />}
-      <main className={`${isPublicPage ? '' : 'container mx-auto px-4 py-6'}`}>
+      <main className={`container mx-auto px-4 py-6 mb-16 md:mb-0`}>
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/auth" element={<AuthPage />} />
@@ -77,7 +77,6 @@ const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
-          {/* Redirect /index to /dashboard */}
           <Route path="/index" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </main>
