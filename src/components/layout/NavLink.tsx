@@ -38,7 +38,6 @@ const NavLink = ({
         iconOnly ? "h-5 w-5" : "mr-2"
       )} />
       {!iconOnly && label}
-      {iconOnly && <span className="mt-1 text-xs">{label}</span>}
     </Link>
   );
 };

@@ -5,10 +5,12 @@ import NavLink from "./NavLink";
 import NavActions from "./NavActions";
 import MobileNav from "./MobileNav";
 import { Siren } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Navbar = () => {
   const location = useLocation();
   const isActive = (path: string) => location.pathname === path;
+  const isMobile = useIsMobile();
 
   return (
     <>
@@ -21,7 +23,9 @@ const Navbar = () => {
                   <div className="absolute inset-0 bg-primary/10 rounded-full" />
                   <Siren className="h-6 w-6 text-primary relative z-10" />
                 </div>
-                <span className="text-xl font-bold">Rapid Reporting System</span>
+                <span className="text-xl font-bold">
+                  {isMobile ? "RRS" : "Rapid Reporting System"}
+                </span>
               </Link>
             </div>
 

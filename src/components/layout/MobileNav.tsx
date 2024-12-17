@@ -1,7 +1,5 @@
-import { Button } from "@/components/ui/button";
 import NavLink from "./NavLink";
 import { navItems } from "./NavItems";
-import NavActions from "./NavActions";
 
 interface MobileNavProps {
   isActive: (path: string) => boolean;
@@ -16,7 +14,7 @@ const MobileNav = ({ isActive }: MobileNavProps) => {
             key={item.path}
             {...item}
             isActive={isActive(item.path)}
-            className="flex flex-col items-center justify-center p-2 text-xs"
+            className="flex flex-col items-center justify-center p-2"
             iconOnly
           />
         ))}
